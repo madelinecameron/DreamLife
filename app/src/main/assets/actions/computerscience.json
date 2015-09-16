@@ -1,0 +1,101 @@
+{
+  "actions": [
+    {
+      "Name": "Program a website",
+      "Description": "Build website",
+      "Needed": {
+        "Programming": "25"
+      },
+      "Result": {
+        "Programming": "R3-7",
+        "Computer Science": "R1-2",
+        "Progress": {
+          "Base": "0.01",
+          "Get": 6
+        },
+        "Energy": "-10",
+        "Fun": "-5",
+        "Food": "-5"
+      },
+      "Page": "Work"
+    },
+    {
+      "Name": "Program a large application",
+      "Description": "Build large app",
+      "Needed": {
+        "Programming": "50"
+      },
+      "Result": {
+        "Programming": "R5-10",
+        "Computer Science": "R4-6",
+        "Progress": {
+          "Base": "0.01",
+          "Get": 7
+        },
+        "Energy": "-25",
+        "Fun": "-15",
+        "Food": "-10"
+      },
+      "Page": "Work"
+    },
+    {
+      "Name": "Program new AI",
+      "Description": "Build AI",
+      "Needed": {
+        "Programming": "100"
+      },
+      "Result": {
+        "Programming": "R10-15",
+        "Computer Science": "R15-20",
+        "Progress": {
+          "Base": "0.01",
+          "Get": 8
+        },
+        "Energy": "-25",
+        "Fun": "-25",
+        "Food": "-35"
+      },
+      "Page": "Work"
+    },
+    {
+      "Name": "Do Computer Science research",
+      "Description": "Try to be the next Donald Knuth",
+      "Needed": {
+        "Computer Science": "125",
+        "Writing": "75"
+      },
+      "Result": {
+        "Writing": "R12-17",
+        "Computer Science": "R20-50",
+        "Progress": {
+          "Base": "0.01",
+          "Get": 9
+        },
+        "Energy": "-10",
+        "Fun": "-25",
+        "Food": "-5"
+      },
+      "Page": "Work"
+    },
+    {
+      "Name": "Write a programming book",
+      "Description": "Build website",
+      "Needed": {
+        "Programming": "150",
+        "Writing": "25"
+      },
+      "Result": {
+        "Programming": "R5-8",
+        "Writing": "R1-2",
+        "Energy": "-10",
+        "Fun": "-25",
+        "Food": "-10",
+        "Progress": {
+          "Base": "0.01",
+          "Get": 10
+        }
+      },
+      "Page": "Work"
+    }
+  ]
+}

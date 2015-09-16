@@ -1,0 +1,71 @@
+{
+  "actions": [
+    {
+      "Name": "Study for Bachelors in Computer Science",
+      "Description": "*Beep* *boop*",
+      "Needed": {
+        "Item": {
+          "13": "1"
+        }
+      },
+      "Result": {
+        "Computer Science" : "R1-10",
+        "Programming": "R1-3",
+        "Energy": "-25",
+        "Fun": "-15",
+        "Food": "-10",
+        "Progress": {
+          "Base": "0.01",
+          "Modifier": [
+            "Computer Science"
+          ],
+          "Get": 4
+        }
+      },
+      "Page": "Education"
+    },
+    {
+      "Name": "Study for Bachelors in History",
+      "Description": "This will go down in history!",
+      "Needed": {
+        "Item": {
+          "13": "1"
+        }
+      },
+      "Result": {
+        "History" : "R1-10",
+        "Energy": "-25",
+        "Fun": "-15",
+        "Food": "-10",
+        "Progress": {
+          "Base": "0.01",
+          "Get": 3
+        }
+      },
+      "Page": "Education"
+    },
+    {
+      "Name": "Study for BS in Engineering",
+      "Description": "You are *engineering* yourself a better future here",
+      "Needed": {
+        "Item": {
+          "13": "1"
+        }
+      },
+      "Result": {
+        "Engineering" : "R1-10",
+        "Energy": "-50",
+        "Fun": "-35",
+        "Food": "-10",
+        "Progress": {
+          "Base": "0.01",
+          "Modifier": [
+            ""
+          ],
+          "Get": "EngineeringBS"
+        }
+      },
+      "Page": "Education"
+    }
+  ]
+}

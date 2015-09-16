@@ -1,0 +1,54 @@
+{
+  "actions": [
+    {
+      "Name": "Beg for money",
+      "Description": "You aren't above begging!",
+      "Needed": {},
+      "Result": {
+        "Money": "R1-5"
+      }
+    },
+    {
+      "Name": "Apply for fast food job",
+      "Description": "[Placeholder]",
+      "Needed": {},
+      "Result": {
+        "Chance": {
+          "Base": "0.01",
+          "Modifier": [
+            "Speaking"
+          ],
+          "Get": 1
+        }
+      }
+    },
+    {
+      "Name": "Apply for data entry job",
+      "Description": "[Placeholder]",
+      "Needed": {},
+      "Result": {
+        "Chance": {
+          "Base": "0.01",
+          "Modifier": [
+            "Speaking"
+          ],
+          "Get": 11
+        }
+      }
+    },
+    {
+      "Name": "Apply for IT job",
+      "Description": "[Placeholder]",
+      "Needed": {},
+      "Result": {
+        "Chance": {
+          "Base": "0.01",
+          "Modifier": [
+            "Computer Science"
+          ],
+          "Get": 12
+        }
+      }
+    }
+  ]
+}

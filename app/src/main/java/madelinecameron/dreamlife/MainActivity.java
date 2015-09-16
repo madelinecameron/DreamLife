@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,6 +24,8 @@ import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
      */
     ViewPager mViewPager;
 
+    private static GameState gameState;
     static HashMap<Integer, ArrayAdapter<String>> actionPageMap;
 
     @Override
@@ -52,6 +56,10 @@ public class MainActivity extends AppCompatActivity {
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+
+        DBManager db = new DBManager(getBaseContext());
+        this.gameState = new GameState(getBaseContext());
+        this.actionPageMap = new HashMap<>();
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -170,7 +178,8 @@ public class MainActivity extends AppCompatActivity {
             ArrayAdapter<String> actionList = null;
 
             if(!actionPageMap.containsKey(args.getInt(ARG_SECTION_NUMBER))) {
-                actionList = new ActionPage(this.getContext(), pageType).updateOrCreateList();
+                //HashMap<String, JSONObject> obj = new ActionPage(this.getContext(), pageType).updateOrCreateList(gameState.getCharacter());
+                Log.d("SDFSD", "DFSF");
             }
             else {
                 actionList = actionPageMap.get(args.getInt(ARG_SECTION_NUMBER));
@@ -179,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
             actionView.setAdapter(actionList);
 
             return rootView;
-        } 
+        }
     }
 
 }

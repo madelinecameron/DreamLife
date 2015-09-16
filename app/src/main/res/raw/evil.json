@@ -1,0 +1,60 @@
+{
+  "actions": [
+    {
+      "Name": "Mug someone",
+      "Description": "Tsk, tsk.",
+      "Needed": {
+        "Karma": "LT-10"
+      },
+      "Result": {
+        "Money": "R10-30",
+        "Karma": "-1",
+        "Fun": "1",
+        "Energy": "-15"
+      },
+      "Page": "Personal"
+    },
+    {
+      "Name": "Rob a store",
+      "Description": "What are you doing?!",
+      "Needed": {
+        "Karma": "LT-50"
+      },
+      "Result": {
+        "Money": "R100-300",
+        "Karma": "-10",
+        "Fun": "10",
+        "Energy": "-50"
+      },
+      "Page": "Personal"
+    },
+    {
+      "Name": "Rob a bank",
+      "Description": "You are going down the wrong path.",
+      "Needed": {
+        "Karma": "LT-250"
+      },
+      "Result": {
+        "Money": "R10-30",
+        "Karma": "-25",
+        "Fun": "25",
+        "Energy": "-100"
+      },
+      "Page": "Personal"
+    },
+    {
+      "Name": "Blackmail the President",
+      "Description": "You are just irredeemable...",
+      "Needed": {
+        "Karma": "-10000"
+      },
+      "Result": {
+        "Money": "R10000-100000",
+        "Karma": "-100",
+        "Fun": "1000",
+        "Energy": "-300"
+      },
+      "Page": "Personal"
+    }
+  ]
+}

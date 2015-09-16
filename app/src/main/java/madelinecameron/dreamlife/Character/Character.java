@@ -14,73 +14,62 @@ import java.util.List;
 import java.util.Set;
 
 import madelinecameron.dreamlife.DBManager;
+import madelinecameron.dreamlife.Item;
 import madelinecameron.dreamlife.PageType;
 
 /**
  * Created by madel on 8/30/2015.
  */
 public class Character {
-    private Float energy, food, fun, cash, passiveIncome;
-    private Integer age = 18;
-    private Education highestEdu;
-    private Home homeType;
+    private HashMap<String, Object> attributes;
     private ArrayList<Integer> ownedItems;
-    private static DBManager dbManager;
-    private static HashMap<Integer, HashMap<String, String>> allItems;
     private HashMap<String, Float> skillMap;
 
-    public Character(Context context) {
-        energy = 0.0f;
-        food = 100.0f;
-        fun = 100.0f;
-        cash = 100.0f;
-        passiveIncome = 0.0f;
-
-        dbManager = new DBManager(context);
-
-        initItemList();
+    public Character() {
+        attributes.put("Energy", 0.0f);
+        attributes.put("Food", 100.0f);
+        attributes.put("Fun", 100.0f);
+        attributes.put("Cash", 100.0f);
+        attributes.put("PassiveIncome", 0.0f);
+        attributes.put("Karma", 0.0f);
+        attributes.put("Age", 18);
+        attributes.put("Education", Education.HIGH_SCHOOL);
+        attributes.put("Home", Home.HOMELESS);
     }
 
-    public List<Float> heartbeat() {
-        cash += passiveIncome;
+    public HashMap<String, Object> heartbeat() {
+        Float cash = (Float)attributes.get("Cash");
+        attributes.put("Cash", cash + (Float)attributes.get("PassiveIncome"));
 
-        return Arrays.asList(energy, food, fun, cash, passiveIncome);
+        return attributes;
     }
 
-    public String getEducation() { return highestEdu.toString(); }
-    public String getHomeType() { return homeType.toString(); }
+    public String getEducation() { return attributes.get("Education").toString(); }
+    public String getHomeType() { return attributes.get("Home").toString(); }
     public ArrayList<Integer> getOwnedItems() { return ownedItems; }
-    public String getItemName(Integer itemID) { return allItems.get(itemID).get("Name"); }
     public Set<String> getSkills() { return skillMap.keySet(); }
-    public Float getSkillLevel(Integer skillName) { return skillMap.get(skillName); }
+    public boolean hasSkill(String skillName) { return skillMap.keySet().contains(skillName); }
+    public boolean isAttribute(String name) { return attributes.containsKey(name); }
+    public Boolean ownsItem(Integer itemID) { return ownedItems.contains(itemID); }
+    public Float getSkillLevel(String skillName) { return skillMap.get(skillName); }
+    public Float getAttrLevel(String attrName) { return (Float)attributes.get(attrName); }
 
-    public void modifyCash(Float updateValue) { cash += updateValue; }
-    public void modifyPassiveIncome(Float updateValue) { passiveIncome += updateValue; }
-    public void modifyFood(Float updateValue) { food += updateValue; }
-    public void modifyEnergy(Float updateValue) { energy += updateValue; }
-    public void modifyFun(Float updateValue) {
-        fun += updateValue;
-    }
-    public void modifyEducation(Education edu) { highestEdu = edu; }
-    public void modifyAge() { age++; }
+    public void modifyAttr(String attrName, Object updateValue) { attributes.put(attrName, updateValue); }
 
-    public boolean buyItem(Integer itemID) {
+    public boolean buyItem(Item item) {
         try {
-            HashMap<String, String> item = allItems.get(itemID);
-            JSONObject boostObj = new JSONObject(item.get("Boost"));
+            HashMap<String, Object> effects = item.createEffectObj();
 
-            while(boostObj.keys().hasNext()) {
-                String selectedKey = boostObj.keys().next();
-
-                switch(selectedKey.toUpperCase()) {
+            for(String s : effects.keySet()) {
+                switch(s.toUpperCase()) {
                     case "PASSIVEINCOME":
-                        modifyPassiveIncome((float)boostObj.getDouble(selectedKey));
+                        modifyAttr("PassiveIncome", getAttrLevel("PassiveIncome") + (Float)effects.get("PassiveIncome"));
                         break;
                 }
             }
 
-            modifyCash(-1 * Float.valueOf(item.get("Cost")));
-            ownedItems.add(itemID);
+            modifyAttr("Cash", getAttrLevel("Cash") - Float.valueOf(item.cost));
+            ownedItems.add(item.id);
 
             return true;
         }
@@ -91,23 +80,20 @@ public class Character {
         }
     }
 
-    public boolean sellItem(Integer itemID) {
+    public boolean sellItem(Item item) {
         try {
-            HashMap<String, String> item = allItems.get(itemID);
-            JSONObject boostObj = new JSONObject(item.get("boost"));
+            HashMap<String, Object> effects = item.createEffectObj();
 
-            while(boostObj.keys().hasNext()) {
-                String selectedKey = boostObj.keys().next();
-
-                switch(selectedKey.toUpperCase()) {
+            for(String s : effects.keySet()) {
+                switch(s.toUpperCase()) {
                     case "PASSIVEINCOME":
-                        modifyPassiveIncome(-1 * (float)boostObj.getDouble(selectedKey));
+                        modifyAttr("PassiveIncome", getAttrLevel("PassiveIncome") - (Float)effects.get("PassiveIncome"));
                         break;
                 }
             }
 
-            modifyCash(0.5f * Float.valueOf(item.get("Cost")));
-            ownedItems.remove(itemID);
+            modifyAttr("Cash", getAttrLevel("Cash") - item.getSellCost());
+            ownedItems.remove(item.id);
 
             return true;
         }
@@ -117,58 +103,4 @@ public class Character {
             return false;
         }
     }
-
-    private boolean initItemList() {
-        try {
-            SQLiteDatabase db = dbManager.getReadableDatabase();
-            allItems = new HashMap<>();
-
-            Cursor selectCursor = db.query("Items", null, null, null, null, null, null);
-
-            if (selectCursor.moveToFirst()) {
-                do {
-                    HashMap<String, String> map = new HashMap<>();
-                    for (int i = 0; i < selectCursor.getColumnCount(); i++) {
-                        map.put(selectCursor.getColumnName(i), selectCursor.getString(i));
-                    }
-
-                    allItems.put(selectCursor.getInt(selectCursor.getColumnIndex("id")), map);
-                } while (selectCursor.moveToNext());
-            }
-            db.close();
-
-            return true;
-        }
-        catch(Exception e) {
-            Log.d("DreamLife", e.toString());
-            return false;
-        }
-    }
-
-    public ArrayList<HashMap<String, String>> getAllAvaliableItems(PageType pageType) {
-        SQLiteDatabase db = dbManager.getReadableDatabase();
-
-        Cursor selectCursor = db.query("Items", null, "CashGT > ? AND SciGT > ? AND ReadGT > ? " +
-                        "AND SpeakGT > ? AND OlderThan >= ? AND Home >= ? AND Edu >= ?",
-                new String[]{cash.toString(), skillMap.get("sci").toString(), skillMap.get("read").toString(),
-                        skillMap.get("speak").toString(), age.toString(), homeType.toString(), highestEdu.toString()}, null, null, null);
-
-        ArrayList<HashMap<String, String>> gameObjList = new ArrayList<>();
-
-        if (selectCursor.moveToFirst()) {
-            do {
-                HashMap<String, String> map = new HashMap<>();
-                for(int i = 0; i < selectCursor.getColumnCount(); i++)
-                {
-                    map.put(selectCursor.getColumnName(i), selectCursor.getString(i));
-                }
-
-                gameObjList.add(map);
-            } while (selectCursor.moveToNext());
-        }
-        db.close();
-
-        return gameObjList;
-    }
-
 }

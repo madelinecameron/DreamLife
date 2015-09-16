@@ -1,0 +1,57 @@
+{
+  "actions": [
+    {
+      "Name": "Study for Bachelors in History",
+      "Description": "This will go down in history!",
+      "Needed": {
+        "College" : 1
+      },
+      "Result": {
+        "History" : "R1-10",
+        "Energy": "-25",
+        "Fun": "-15",
+        "Food": "-10",
+        "Progress": {
+          "Base": "0.01",
+          "Get": [
+            "HistoryBS"
+          ]
+        }
+      },
+      "Page": "Education"
+    },
+    {
+      "Name": "Conduct History research",
+      "Description": "History will not repeat itself thanks to you!",
+      "Needed": {
+        "History": "100",
+        "Writing": "25"
+      },
+      "Result": {
+        "History": "R5-8",
+        "Writing": "R1-2",
+        "Energy": "-10",
+        "Fun": "-25",
+        "Food": "-10"
+      },
+      "Page": "Work"
+    },
+    {
+      "Name": "Apply for Museum Curator position",
+      "Description": "History will not repeat itself thanks to you!",
+      "Needed": {
+        "History": "125",
+        "Speaking": "25"
+      },
+      "Result": {
+        "History": "R5-8",
+        "Speaking": "R3 - 5",
+        "Energy": "-10",
+        "Fun": "-25",
+        "Food": "-10",
+        "Chance": "Museum Curator Job"
+      },
+      "Page": "Work"
+    }
+  ]
+}

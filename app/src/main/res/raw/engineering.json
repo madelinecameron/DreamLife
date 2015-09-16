@@ -1,0 +1,27 @@
+{
+  "actions": [
+    {
+      "Name": "Study for BS in Engineering",
+      "Description": "You are *engineering* yourself a better future here",
+      "Needed": {
+        "College" : "1"
+      },
+      "Result": {
+        "Engineering" : "R1-10",
+        "Energy": "-50",
+        "Fun": "-35",
+        "Food": "-10",
+        "Progress": {
+          "Base": "0.01",
+          "Modifier": [
+            ""
+          ]
+          "Get": [
+            "EngineeringBS"
+          ]
+        }
+      },
+      "Page": "Education"
+    }
+  ]
+}

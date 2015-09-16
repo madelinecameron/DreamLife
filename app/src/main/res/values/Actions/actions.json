@@ -1,0 +1,337 @@
+{
+  "actions" : [
+    {
+      "Name": "Beg for Money",
+      "Description": "You aren't above begging!",
+      "Needed": {},
+      "Result": {
+        "Money": "R1-5",
+        "Fun": "-10",
+        "Energy": "-5"
+      },
+      "Page": "Personal"
+    },
+    {
+      "Name": "Mug someone",
+      "Description": "Tsk, tsk.",
+      "Needed": {
+        "Karma": "LT-10"
+      },
+      "Result": {
+        "Money": "R10-30",
+        "Karma": "-1",
+        "Fun": "1",
+        "Energy": "-15"
+      },
+      "Page": "Personal"
+    },
+    {
+      "Name": "Rob a store",
+      "Description": "What are you doing?!",
+      "Needed": {
+        "Karma": "LT-50"
+      },
+      "Result": {
+        "Money": "R100-300",
+        "Karma": "-10",
+        "Fun": "10",
+        "Energy": "-50"
+      },
+      "Page": "Personal"
+    },
+    {
+      "Name": "Rob a bank",
+      "Description": "You are going down the wrong path.",
+      "Needed": {
+        "Karma": "LT-250"
+      },
+      "Result": {
+        "Money": "R10-30",
+        "Karma": "-25",
+        "Fun": "25",
+        "Energy": "-100"
+      },
+      "Page": "Personal"
+    },
+    {
+      "Name": "Blackmail the President",
+      "Description": "You are just irredeemable...",
+      "Needed": {
+        "Karma": "-10000"
+      },
+      "Result": {
+        "Money": "R10000-100000",
+        "Karma": "-100",
+        "Fun": "1000",
+        "Energy": "-300"
+      },
+      "Page": "Personal"
+    },
+    {
+      "Name": "Donate $100 to charity",
+      "Description": "You are good person.",
+      "Needed": {
+        "Money": "100"
+      },
+      "Result": {
+        "Money": "-100",
+        "Karma": "10",
+        "Fun": "-25"
+      },
+      "Page": "Personal"
+    },
+    {
+      "Name": "Donate $1,000 to charity",
+      "Description": "Great job!",
+      "Needed": {
+        "Money": "1000"
+      },
+      "Result": {
+        "Money": "-1000",
+        "Karma": "100",
+        "Fun": "-50"
+      },
+      "Page": "Personal"
+    },
+    {
+      "Name": "Donate $10,000 to charity",
+      "Description": "You are a saint!",
+      "Needed": {
+        "Money": "10000"
+      },
+      "Result": {
+        "Money": "-10000",
+        "Karma": "1000",
+        "Fun": "-150"
+      },
+      "Page": "Personal"
+    },
+    {
+      "Name": "Apply for college",
+      "Description": "Get smarterer",
+      "Needed": {},
+      "Result": {
+        "Chance": {
+          "Base": "0.01",
+          "Get": [
+            "CollegeAdmittance"
+          ]
+        }
+      }
+    },
+    {
+      "Name": "Study for Bachelors in Computer Science",
+      "Description": "*Beep* *boop*",
+      "Needed": {
+        "Item": {
+          "CollegeAdmittance": "1"
+        }
+      },
+      "Result": {
+        "Computer Science" : "R1-10",
+        "Programming": "R1-3",
+        "Energy": "-25",
+        "Fun": "-15",
+        "Food": "-10",
+        "Progress": {
+          "Base": "0.01",
+          "Modifier": [
+            "Computer Science"
+          ],
+          "Get": [
+            "CSBS"
+          ]
+        }
+      },
+      "Page": "Education"
+    },
+    {
+      "Name": "Study for Bachelors in History",
+      "Description": "This will go down in history!",
+      "Needed": {
+        "College" : 1
+      },
+      "Result": {
+        "History" : "R1-10",
+        "Energy": "-25",
+        "Fun": "-15",
+        "Food": "-10",
+        "Progress": {
+          "Base": "0.01",
+          "Get": [
+            "HistoryBS"
+          ]
+        }
+      },
+      "Page": "Education"
+    },
+    {
+      "Name": "Study for BS in Engineering",
+      "Description": "You are *engineering* yourself a better future here",
+      "Needed": {
+        "College" : "1"
+      },
+      "Result": {
+        "Engineering" : "R1-10",
+        "Energy": "-50",
+        "Fun": "-35",
+        "Food": "-10",
+        "Progress": {
+          "Base": "0.01",
+          "Modifier": [
+            ""
+          ]
+          "Get": [
+            "EngineeringBS"
+          ]
+        }
+      },
+      "Page": "Education"
+    },
+    {
+      "Name": "Program a website",
+      "Description": "Build website",
+      "Needed": {
+        "Programming": "25"
+      },
+      "Result": {
+        "Programming": "R3-7",
+        "Computer Science": "R1-2",
+        "Progress": {
+          "Base": "0.01",
+          "Get": [
+            "Website"
+          ]
+        },
+        "Energy": "-10",
+        "Fun": "-5",
+        "Food": "-5"
+      },
+      "Page": "Work"
+    },
+    {
+      "Name": "Program a large application",
+      "Description": "Build large app",
+      "Needed": {
+        "Programming": "50"
+      },
+      "Result": {
+        "Programming": "R5-10",
+        "Computer Science": "R4-6",
+        "Progress": {
+          "Base": "0.01",
+          "Get": [
+            "Large app"
+          ]
+        },
+        "Energy": "-25",
+        "Fun": "-15",
+        "Food": "-10"
+      },
+      "Page": "Work"
+    },
+    {
+      "Name": "Program new AI",
+      "Description": "Build AI",
+      "Needed": {
+        "Programming": "100"
+      },
+      "Result": {
+        "Programming": "R10-15",
+        "Computer Science": "R15-20",
+        "Progress": {
+          "Base": "0.01",
+          "Get": [
+            "AI"
+          ]
+        },
+        "Energy": "-25",
+        "Fun": "-25",
+        "Food": "-35"
+      },
+      "Page": "Work"
+    },
+    {
+      "Name": "Do Computer Science research",
+      "Description": "Try to be the next Donald Knuth",
+      "Needed": {
+        "Computer Science": "125",
+        "Writing": "75"
+      },
+      "Result": {
+        "Writing": "R12-17",
+        "Computer Science": "R20-50",
+        "Progress": {
+          "Base": "0.01",
+          "Get": [
+            "CS Research"
+          ]
+        },
+        "Energy": "-10",
+        "Fun": "-25",
+        "Food": "-5"
+      },
+      "Page": "Work"
+    },
+    {
+      "Name": "Write a programming book",
+      "Description": "Build website",
+      "Needed": {
+        "Programming": "150",
+        "Writing": "25"
+      },
+      "Result": {
+        "Programming": "R5-8",
+        "Writing": "R1-2",
+        "Energy": "-10",
+        "Fun": "-25",
+        "Food": "-10"
+      },
+      "Page": "Work"
+    },
+    {
+      "Name": "Conduct History research",
+      "Description": "History will not repeat itself thanks to you!",
+      "Needed": {
+        "History": "100",
+        "Writing": "25"
+      },
+      "Result": {
+        "History": "R5-8",
+        "Writing": "R1-2",
+        "Energy": "-10",
+        "Fun": "-25",
+        "Food": "-10"
+      },
+      "Page": "Work"
+    },
+    {
+      "Name": "Apply to fast food job",
+      "Description": "We all have to start somewhere",
+      "Needed": {},
+      "Result": {
+        "Energy": "-25",
+        "Fun": "-30",
+        "Chance": "McDonalds Job"
+      },
+      "Page": "Work"
+    },
+    {
+      "Name": "Apply for Museum Curator position",
+      "Description": "History will not repeat itself thanks to you!",
+      "Needed": {
+        "History": "125",
+        "Speaking": "25"
+      },
+      "Result": {
+        "History": "R5-8",
+        "Speaking": "R3 - 5",
+        "Energy": "-10",
+        "Fun": "-25",
+        "Food": "-10",
+        "Chance": "Museum Curator Job"
+      },
+      "Page": "Work"
+    },
+  ]
+}
