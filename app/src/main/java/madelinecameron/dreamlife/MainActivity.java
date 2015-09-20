@@ -44,8 +44,8 @@ public class MainActivity extends AppCompatActivity {
      */
     ViewPager mViewPager;
 
-    private static GameState gameState;
-    static HashMap<Integer, ArrayAdapter<String>> actionPageMap;
+    private GameState gameState;
+    private HashMap<Integer, ArrayAdapter<String>> actionPageMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,9 +57,14 @@ public class MainActivity extends AppCompatActivity {
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
-        DBManager db = new DBManager(getBaseContext());
+        Log.i("DreamLife", "Creating game state...");
         this.gameState = new GameState(getBaseContext());
         this.actionPageMap = new HashMap<>();
+
+        if(getBaseContext().getDatabasePath("DreamLife.db").exists() && GameState.getItemCount() == 0) {
+            Log.i("DreamLife", "DB init, load items");
+            GameState.loadAllItems();
+        }
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -177,13 +182,12 @@ public class MainActivity extends AppCompatActivity {
 
             ArrayAdapter<String> actionList = null;
 
-            if(!actionPageMap.containsKey(args.getInt(ARG_SECTION_NUMBER))) {
-                //HashMap<String, JSONObject> obj = new ActionPage(this.getContext(), pageType).updateOrCreateList(gameState.getCharacter());
-                Log.d("SDFSD", "DFSF");
+            /*if(!actionPageMap.containsKey(args.getInt(ARG_SECTION_NUMBER))) {
+                //HashMap<String, JSONObject> obj = new ActionPage(this.getContext(), pageType).updateOrCreateList(gameState.getGameCharacter());
             }
             else {
                 actionList = actionPageMap.get(args.getInt(ARG_SECTION_NUMBER));
-            }
+            }*/
             ListView actionView = (ListView) rootView.findViewById(R.id.action_list);
             actionView.setAdapter(actionList);
 

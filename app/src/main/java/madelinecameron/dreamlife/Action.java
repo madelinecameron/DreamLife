@@ -1,8 +1,8 @@
 package madelinecameron.dreamlife;
 
 import java.util.HashMap;
-import java.util.List;
-import madelinecameron.dreamlife.Character.Character;
+
+import madelinecameron.dreamlife.Character.GameCharacter;
 
 /**
  * Created by madel on 9/15/2015.
@@ -15,18 +15,18 @@ public class Action {
 
     }
 
-    public boolean isUnlocked(Character currentCharacter) {
+    public boolean isUnlocked(GameCharacter currentGameCharacter) {
         for(Integer id : neededItems.keySet()) {
-            if (!currentCharacter.ownsItem(id)) { return false; }
+            if (!currentGameCharacter.ownsItem(id)) { return false; }
         }
 
         for(String name : neededSkillsAndAttr.keySet()) {
-            if(currentCharacter.isAttribute(name)) {
-                if(currentCharacter.getAttrLevel(name) < neededSkillsAndAttr.get(name)) { return false; }
+            if(currentGameCharacter.isAttribute(name)) {
+                if(currentGameCharacter.getAttrLevel(name) < neededSkillsAndAttr.get(name)) { return false; }
             }
             else {
-                if(currentCharacter.hasSkill(name)) {
-                    if(currentCharacter.getSkillLevel(name) < neededSkillsAndAttr.get(name)) { return false; }
+                if(currentGameCharacter.hasSkill(name)) {
+                    if(currentGameCharacter.getSkillLevel(name) < neededSkillsAndAttr.get(name)) { return false; }
                 }
                 else {
                     return false;
