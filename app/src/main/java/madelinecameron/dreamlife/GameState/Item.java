@@ -1,4 +1,4 @@
-package madelinecameron.dreamlife;
+package madelinecameron.dreamlife.GameState;
 
 import org.json.JSONObject;
 

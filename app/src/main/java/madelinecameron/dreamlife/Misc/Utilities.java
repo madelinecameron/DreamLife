@@ -1,16 +1,19 @@
-package madelinecameron.dreamlife;
+package madelinecameron.dreamlife.Misc;
 
 import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.Set;
 
 import madelinecameron.dreamlife.Character.GameCharacter;
+import madelinecameron.dreamlife.GameState.GameState;
 
 /**
  * Created by madel on 9/15/2015.
@@ -117,22 +120,20 @@ public class Utilities {
     public static void removeEffects(JSONObject effects, GameCharacter currentChar) {
     }
 
-    public static Object parseObj(String o) {
-        String func = o.substring(0, 2);
-        switch(func) {
-            case "RA":  //Random
-                Integer lowerBound = Integer.getInteger(o.substring(3, o.indexOf('-')));
-                Integer upperBound = Integer.getInteger(o.substring(o.indexOf('-') + 1, o.length() - o.indexOf('-') + 1));
-
-                return new Random().nextInt(upperBound - lowerBound) + lowerBound;
-        }
-
-        return null;
-    }
-
     public static boolean conditionFulfilled(String name, String condition, GameCharacter currentChar) {
-        String func = condition.substring(0, 2);
-        Integer bound = Integer.valueOf(condition.substring(3));
+        String func = "";
+        Integer bound = -1;
+        if(condition.length() > 2) {
+            if (condition.substring(0, 2).matches("([A-Za-z]{2})")) {
+                func = condition.substring(0, 2);
+                bound = Integer.valueOf(condition.substring(2));
+            } else {
+                bound = Integer.valueOf(condition);
+            }
+        }
+        else {
+            bound = Integer.valueOf(condition);
+        }
 
         switch(func) {
             case "LT":  //Less than
@@ -157,6 +158,7 @@ public class Utilities {
     }
 
     public static boolean hasAllReqItems(JSONArray itemArray, GameCharacter currentChar) {
+        if(itemArray == null) { return true; }
         for(int i = 0; i < itemArray.length(); i++) {
             try {
                 JSONObject neededItem = itemArray.getJSONObject(i);

@@ -5,11 +5,11 @@ import android.util.Log;
 import java.util.HashMap;
 import java.util.Set;
 
-import madelinecameron.dreamlife.GameEvent;
-import madelinecameron.dreamlife.GameEventType;
-import madelinecameron.dreamlife.GameState;
-import madelinecameron.dreamlife.Item;
-import madelinecameron.dreamlife.Utilities;
+import madelinecameron.dreamlife.GameState.GameEvent;
+import madelinecameron.dreamlife.GameState.GameEventType;
+import madelinecameron.dreamlife.GameState.GameState;
+import madelinecameron.dreamlife.GameState.Item;
+import madelinecameron.dreamlife.Misc.Utilities;
 
 /**
  * Created by madel on 8/30/2015.
@@ -24,7 +24,7 @@ public class GameCharacter {
         attributes.put("Energy", 0.0f);
         attributes.put("Food", 100.0f);
         attributes.put("Fun", 100.0f);
-        attributes.put("Cash", 100.0f);
+        attributes.put("Money", 100.0f);
         attributes.put("PassiveIncome", 0.0f);
         attributes.put("Karma", 0.0f);
         attributes.put("Age", 18);
@@ -33,8 +33,8 @@ public class GameCharacter {
     }
 
     public HashMap<String, Object> heartbeat() {
-        Float cash = (Float)attributes.get("Cash");
-        attributes.put("Cash", cash + (Float)attributes.get("PassiveIncome"));
+        Float Money = (Float)attributes.get("Money");
+        attributes.put("Money", Money + (Float)attributes.get("PassiveIncome"));
 
         return attributes;
     }
@@ -76,7 +76,7 @@ public class GameCharacter {
     public boolean buyItem(Item item) {
         try {
             Utilities.causeEffects(item.results, this);
-            modifyAttrOrSkill("Cash", getAttrLevel("Cash") - Float.valueOf(item.cost));
+            modifyAttrOrSkill("Money", getAttrLevel("Money") - Float.valueOf(item.cost));
 
             if(ownedItems.containsKey(item.id)) {
                 ownedItems.put(item.id, ownedItems.get(item.id));
@@ -99,7 +99,7 @@ public class GameCharacter {
     public boolean sellItem(Item item) {
         try {
             Utilities.removeEffects(item.results, this);
-            modifyAttrOrSkill("Cash", getAttrLevel("Cash") - item.getSellCost());
+            modifyAttrOrSkill("Money", getAttrLevel("Money") - item.getSellCost());
 
             ownedItems.put(item.id, ownedItems.get(item.id) - 1);
 

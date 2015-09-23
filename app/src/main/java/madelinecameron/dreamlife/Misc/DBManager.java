@@ -1,4 +1,4 @@
-package madelinecameron.dreamlife;
+package madelinecameron.dreamlife.Misc;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

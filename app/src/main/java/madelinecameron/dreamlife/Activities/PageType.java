@@ -1,4 +1,4 @@
-package madelinecameron.dreamlife;
+package madelinecameron.dreamlife.Activities;
 
 /**
  * Created by madel on 8/30/2015.
