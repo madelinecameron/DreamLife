@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.Set;
@@ -24,35 +25,49 @@ public class Utilities {
     public static final double MODIFIER_BOOST_PER_TEN_PTS = 0.01;
 
     public static void causeEffects(JSONObject effects, GameCharacter currentChar) {
-        while(effects.keys().hasNext()) {
-            String key = effects.keys().next();
+        Iterator<String> effectsKeys = effects.keys();
+        while(effectsKeys.hasNext()) {
+            String key = effectsKeys.next();
 
             switch(key.toUpperCase()) {
                 case "CHANCE":
                     try {
                         JSONObject chanceObj = effects.getJSONObject(key);
                         Double basePercent = chanceObj.getDouble("Base");
-                        JSONArray modifiers = chanceObj.getJSONArray("Modifier");
                         JSONArray get = chanceObj.getJSONArray("Get");
 
-                        for(int i = 0; i < modifiers.length(); i++) {
-                            String modName = modifiers.getString(i);
-                            if(currentChar.isAttribute(modName)) {
-                                basePercent += currentChar.getAttrLevel(modName) * MODIFIER_BOOST_PER_TEN_PTS;
-                            }
-                            else {
-                                basePercent += currentChar.getSkillLevel(modName) * MODIFIER_BOOST_PER_TEN_PTS;
+                        if(chanceObj.has("Modifier")) {
+                            Log.d("DreamLife", "Has modifier");
+                            JSONArray modifiers = chanceObj.getJSONArray("Modifier");
+
+                            for (int i = 0; i < modifiers.length(); i++) {
+                                String modName = modifiers.getString(i);
+                                if (currentChar.isAttribute(modName)) {
+                                    Log.d("DreamLife", modName + " is attr");
+                                    basePercent += currentChar.getAttrLevel(modName) * MODIFIER_BOOST_PER_TEN_PTS;
+                                } else {
+                                    Log.d("DreamLife", modName + " is skill");
+                                    if(currentChar.hasSkill(modName)) {
+                                        basePercent += currentChar.getSkillLevel(modName) * MODIFIER_BOOST_PER_TEN_PTS;
+                                    }
+                                }
                             }
                         }
 
-                        if (new Random().nextDouble() < basePercent) {  //If rand smaller than base, it is successful
+                        if (new Random().nextDouble() < basePercent + 100) {  //If rand smaller than base, it is successful
+                            Log.d("DreamLife", "Got it!");
                             Set<Integer> addedItems = new LinkedHashSet<>();
                             for(int y = 0; y < get.length(); y++) {
                                 JSONObject item = get.getJSONObject(y);
                                 String itemID = item.keys().next();
+                                Log.d("DreamLife", "ItemID: " + itemID);
+                                Log.d("DreamLife", String.valueOf(item.getInt(itemID)));
+                                Log.d("DreamLife", Integer.valueOf(itemID).toString());
 
                                 currentChar.addItem(Integer.valueOf(itemID), item.getInt(itemID));
                                 addedItems.add(Integer.valueOf(itemID));
+
+                                Log.d("DreamLife", "NEXT");
                             }
                         }
                     }
@@ -64,16 +79,18 @@ public class Utilities {
                     try {
                         JSONObject progressObj = effects.getJSONObject(key);
                         Double basePercent = progressObj.getDouble("Base");
-                        JSONArray modifiers = progressObj.getJSONArray("Modifier");
                         JSONArray get = progressObj.getJSONArray("Get");
 
-                        for(int i = 0; i < modifiers.length(); i++) {
-                            String modName = modifiers.getString(i);
-                            if(currentChar.isAttribute(modName)) {
-                                basePercent += currentChar.getAttrLevel(modName) * MODIFIER_BOOST_PER_TEN_PTS;
-                            }
-                            else {
-                                basePercent += currentChar.getSkillLevel(modName) * MODIFIER_BOOST_PER_TEN_PTS;
+                        if(progressObj.has("Modifier")) {
+                            JSONArray modifiers = progressObj.getJSONArray("Modifier");
+
+                            for (int i = 0; i < modifiers.length(); i++) {
+                                String modName = modifiers.getString(i);
+                                if (currentChar.isAttribute(modName)) {
+                                    basePercent += currentChar.getAttrLevel(modName) * MODIFIER_BOOST_PER_TEN_PTS;
+                                } else {
+                                    basePercent += currentChar.getSkillLevel(modName) * MODIFIER_BOOST_PER_TEN_PTS;
+                                }
                             }
                         }
 
@@ -93,20 +110,23 @@ public class Utilities {
                 default:  //Attr / skill modifiers
                     try {
                         String value = effects.getString(key).replace(" ", "");
+                        Log.d("DreamLife", value);
                         Integer modifyValue;
 
                         if(value.contains("RA")) {
-                            Integer lowerBound = Integer.getInteger(value.substring(3, value.indexOf('-')));
-                            Integer upperBound = Integer.getInteger(value.substring(value.indexOf('-') + 1, value.length() - value.indexOf('-') + 1));
+                            Integer lowerBound = Integer.valueOf(value.substring(2, value.indexOf("-")));
+                            Integer upperBound = Integer.valueOf(value.substring(value.indexOf("-") + 1));
 
                             modifyValue = new Random().nextInt(upperBound - lowerBound) + lowerBound;
                         }
                         else { modifyValue = Integer.valueOf(value); }
 
                         if(!currentChar.hasSkill(key) && !currentChar.isAttribute(key)) {
+                            Log.d("DreamLife", "Adding " + key);
                             currentChar.addSkill(key);
                         }
 
+                        Log.d("DreamLife", "Modifying " + key + " by " + modifyValue.toString());
                         currentChar.modifyAttrOrSkill(key, Float.valueOf(modifyValue));
                     }
                     catch(Exception e) {

@@ -21,9 +21,9 @@ public class GameCharacter {
     private HashMap<String, Float> progressMap = new HashMap<>();
 
     public GameCharacter() {
-        attributes.put("Energy", 0.0f);
-        attributes.put("Food", 100.0f);
-        attributes.put("Fun", 100.0f);
+        attributes.put("Energy", 0);
+        attributes.put("Food", 100);
+        attributes.put("Fun", 100);
         attributes.put("Money", 100.0f);
         attributes.put("PassiveIncome", 0.0f);
         attributes.put("Karma", 0.0f);
@@ -58,7 +58,12 @@ public class GameCharacter {
     public void addSkill(String skillName) { skillMap.put(skillName, 0.0f); }
     public void addItem(Integer itemID) { ownedItems.put(itemID, ownedItems.get(itemID) + 1); }
     public void addItem(Integer itemID, Integer qty) {
-        ownedItems.put(itemID, ownedItems.get(itemID) + qty);
+        if(ownsItem(itemID)) {
+            ownedItems.put(itemID, ownedItems.get(itemID) + qty);
+        }
+        else {
+            ownedItems.put(itemID, qty);
+        }
 
         GameState.addGameEvent(new GameEvent(String.format("%d added", itemID), GameEventType.ITEM_ADDED));
     }

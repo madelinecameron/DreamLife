@@ -15,8 +15,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import madelinecameron.dreamlife.GameState.Action;
 import madelinecameron.dreamlife.GameState.GameState;
@@ -41,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
     private GameState gameState;
     private HashMap<Integer, ArrayAdapter<String>> actionPageMap;
+    private Boolean isRunning;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +68,9 @@ public class MainActivity extends AppCompatActivity {
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+
+        Thread gameLoop = new Thread(new GameLoop(getBaseContext(), this.getWindow().getDecorView().getRootView()));
+        gameLoop.start();
     }
 
 
@@ -185,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 ArrayAdapter<String> actionList = null;
                 Log.d("DreamLife", String.format("Get all for %s", pageType.toString()));
-                HashMap<String, Action> aList = GameState.getValidActions(pageType);
+                final HashMap<String, Action> aList = GameState.getValidActions(pageType);
                 Log.d("DreamLife", String.format("ValidGot: %d", aList.size()));
 
                 String[] actionArray = new String[aList.size()];
@@ -194,6 +200,20 @@ public class MainActivity extends AppCompatActivity {
 
                 ListView actionView = (ListView) rootView.findViewById(R.id.action_list);
                 actionView.setAdapter(actionList);
+
+                actionView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        Action clickedAction = aList.get(parent.getItemAtPosition(position).toString());
+
+                        clickedAction.applyAction();
+
+                        Log.d("DreamLife", "CLICKED! " + clickedAction.name);
+                    }
+                });
+
+                TextView sectionLabel = (TextView) rootView.findViewById(R.id.section_label);
+                sectionLabel.setText(pageType.name());
             }
             catch(Exception e) {
                 Log.e("DreamLife", e.toString());

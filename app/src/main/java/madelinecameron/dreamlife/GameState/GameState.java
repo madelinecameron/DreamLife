@@ -97,6 +97,7 @@ public class GameState {
 
     public static Integer getItemCount() { return allItems.keySet().size(); }
     public static GameCharacter getGameCharacter() { return gameCharacter; }
+    public static GameEvent getNextGameEvent() { return eventQueue.poll(); }
 
     public static HashMap<String, Action> getValidActions(PageType type) {
         boolean allNeedsMet;
