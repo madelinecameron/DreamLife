@@ -24,9 +24,9 @@ public class GameCharacter {
         attributes.put("Energy", 0);
         attributes.put("Food", 100);
         attributes.put("Fun", 100);
-        attributes.put("Money", 100.0f);
-        attributes.put("PassiveIncome", 0.0f);
-        attributes.put("Karma", 0.0f);
+        attributes.put("Money", 100);
+        attributes.put("PassiveIncome", 0);
+        attributes.put("Karma", 0);
         attributes.put("Age", 18);
         attributes.put("Education", Education.HIGH_SCHOOL);
         attributes.put("Home", Home.HOMELESS);
@@ -48,11 +48,12 @@ public class GameCharacter {
     public Boolean ownsItem(Integer itemID) { return ownedItems.containsKey(itemID); }
     public Integer getOwnedItemQty(Integer itemID) { return ownedItems.get(itemID); }
     public Float getSkillLevel(String skillName) { return skillMap.get(skillName); }
-    public Float getAttrLevel(String attrName) { return (Float)attributes.get(attrName); }
+    public Object getAttrLevel(String attrName) { return attributes.get(attrName); }
     public Float getProgression(String name) { return progressMap.get(name); }
 
-    public void modifyAttrOrSkill(String name, Float updateValue) {
-        if(isAttribute(name)) { attributes.put(name, (Float)attributes.get(name) + updateValue); }
+    public void modifyAttrOrSkill(String name, float updateValue) {
+        Log.i("DreamLife", "AAA");
+        if(isAttribute(name)) { attributes.put(name, (int)attributes.get(name) + (int)updateValue); }
         else { skillMap.put(name, skillMap.get(name) + updateValue); }
     }
     public void addSkill(String skillName) { skillMap.put(skillName, 0.0f); }
@@ -81,7 +82,7 @@ public class GameCharacter {
     public boolean buyItem(Item item) {
         try {
             Utilities.causeEffects(item.results, this);
-            modifyAttrOrSkill("Money", getAttrLevel("Money") - Float.valueOf(item.cost));
+            modifyAttrOrSkill("Money", (Float)getAttrLevel("Money") - Float.valueOf(item.cost));
 
             if(ownedItems.containsKey(item.id)) {
                 ownedItems.put(item.id, ownedItems.get(item.id));
@@ -104,7 +105,7 @@ public class GameCharacter {
     public boolean sellItem(Item item) {
         try {
             Utilities.removeEffects(item.results, this);
-            modifyAttrOrSkill("Money", getAttrLevel("Money") - item.getSellCost());
+            modifyAttrOrSkill("Money", (Float)getAttrLevel("Money") + item.getSellCost());
 
             ownedItems.put(item.id, ownedItems.get(item.id) - 1);
 

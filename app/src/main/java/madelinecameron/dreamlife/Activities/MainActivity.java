@@ -1,8 +1,12 @@
 package madelinecameron.dreamlife.Activities;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Locale;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -18,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import madelinecameron.dreamlife.GameState.Action;
@@ -44,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private GameState gameState;
     private HashMap<Integer, ArrayAdapter<String>> actionPageMap;
     private Boolean isRunning;
+    private static Handler uiHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +75,49 @@ public class MainActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        Thread gameLoop = new Thread(new GameLoop(getBaseContext(), this.getWindow().getDecorView().getRootView()));
+        final TextView energyText = (TextView) findViewById(R.id.energy_text);
+        final TextView foodText = (TextView) findViewById(R.id.food_text);
+        final TextView funText = (TextView) findViewById(R.id.fun_text);
+        final ProgressBar energyBar = (ProgressBar) findViewById(R.id.energy_bar);
+        final ProgressBar foodBar = (ProgressBar) findViewById(R.id.food_bar);
+        final ProgressBar funBar = (ProgressBar) findViewById(R.id.fun_bar);
+
+        uiHandler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(Message input) {
+                HashMap<String, Object> updateMap = (HashMap<String, Object>)input.obj;
+                for(String s : updateMap.keySet()) {
+                    Integer updateValue;  //Done because of enums not casting to int
+                    switch(s.toUpperCase()) {
+                        case "ENERGY":
+                            updateValue = Integer.valueOf(updateMap.get(s).toString());
+                            if (energyBar.getProgress() != updateValue) {  //Update energy
+                                energyBar.setProgress(updateValue);
+                                energyText.setText(updateValue.toString() + "/100");
+                            }
+                            break;
+                        case "FOOD":
+                            updateValue = Integer.valueOf(updateMap.get(s).toString());
+                            if (foodBar.getProgress() != updateValue) {  //Update food
+                                foodBar.setProgress(updateValue);
+                                foodText.setText(updateValue.toString() + "/100");
+                            }
+                            break;
+                        case "FUN":
+                            updateValue = Integer.valueOf(updateMap.get(s).toString());
+                            if (funBar.getProgress() != updateValue) {  //Update fun
+                                funBar.setProgress(updateValue);
+                                funText.setText(updateValue.toString() + "/100");
+                            }
+                            break;
+                        default:
+                            continue;
+                    }
+                }
+            }
+        };
+
+        Thread gameLoop = new Thread(new GameLoop(uiHandler, getBaseContext(), this.getWindow().getDecorView().getRootView()));
         gameLoop.start();
     }
 
