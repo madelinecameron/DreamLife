@@ -41,15 +41,18 @@ public class Utilities {
                             Log.i("DreamLife", "ItemKey");
                             if (currentChar.ownsItem(Integer.valueOf(key))) {
                                 basePercent += (currentChar.getOwnedItemQty(Integer.valueOf(key)) * value);
+                                Log.i("DreamLife", String.valueOf(basePercent));
                             }
                         } else {
                             if (currentChar.hasSkill(key)) {
                                 Log.i("DreamLife", "SkillKey");
                                 basePercent += (currentChar.getSkillLevel(key) * value);
+                                Log.i("DreamLife", String.valueOf(basePercent));
                             } else {
                                 if (currentChar.isAttribute(key)) {
                                     Log.i("DreamLife", "AttrKey");
                                     basePercent += (Double.valueOf(currentChar.getAttrLevel(key).toString()) * value);
+                                    Log.i("DreamLife", String.valueOf(basePercent));
                                 }
                             }
                         }
@@ -127,6 +130,25 @@ public class Utilities {
                     }
                     break;
                 case "GET":
+                    try {
+                        JSONArray getArray = effects.getJSONArray(key);
+                        for(int i = 0; i < getArray.length(); i++) {
+                            JSONObject itemObj = getArray.getJSONObject(i);
+
+                            Iterator<String> itemIterator = itemObj.keys();
+                            Integer itemID = 0;
+                            while(itemIterator.hasNext()) {
+                                itemID = Integer.valueOf(itemIterator.next());
+                            }
+
+                            Integer qty = itemObj.getInt(itemID.toString());
+
+                            GameState.getGameCharacter().addItem(itemID, qty);
+                        }
+                    }
+                    catch(Exception e) {
+                        Log.e("DreamLife", e.toString());
+                    }
                     break;
                 case "REMOVE":
                     try {
@@ -184,7 +206,7 @@ public class Utilities {
                         }
 
                         Log.d("DreamLife", "Modifying " + key + " by " + modifyValue.toString());
-                        currentChar.modifyAttrOrSkill(key, (float)modifyValue);
+                        currentChar.modifyAttrOrSkill(key, modifyValue);
                     }
                     catch(Exception e) {
                         Log.e("DreamLife", e.toString());
@@ -203,9 +225,15 @@ public class Utilities {
         if(condition.length() > 2) {
             if(condition.matches("^[A-Za-z]*$")) {
                 if(currentChar.isAttribute(name)) {
-                    Log.i("DreamLife", "AllChar_EQ");
-                    Log.i("DreamLife", condition);
-                    return currentChar.getAttrLevel(name).toString() == condition;
+                    Log.d("DreamLife", "AllChar_EQ");
+                    String booleanVal = condition;
+                    int booleanInt = 0;
+                    if (Boolean.valueOf(booleanVal)) {
+                        booleanInt = 1;
+                    }
+                    Log.d("DreamLife", GameState.getGameCharacter().getAttrLevel(name).toString());
+                    Log.d("DreamLife", String.valueOf(booleanInt));
+                    return GameState.getGameCharacter().getAttrLevel(name) == booleanInt;
                 }
                 else {
                     return false;
@@ -214,13 +242,17 @@ public class Utilities {
             else {
                 if (condition.substring(0, 2).matches("([A-Za-z]{2})")) {
                     func = condition.substring(0, 2);
+                    Log.i("DreamLife", "Bound0");
                     bound = Integer.valueOf(condition.substring(2));
                 } else {
+                    Log.i("DreamLife", "Bound1");
+                    Log.i("DreamLife", condition);
                     bound = Integer.valueOf(condition);
                 }
             }
         }
         else {
+            Log.i("DreamLife", "Bound2");
             bound = Integer.valueOf(condition);
         }
 
@@ -228,7 +260,7 @@ public class Utilities {
             case "LT":  //Less than
                 if(currentChar.isAttribute(name)) {
                     Log.i("DreamLife", "IsAttr_LT");
-                    return (Float)currentChar.getAttrLevel(name) < bound;
+                    return (int)currentChar.getAttrLevel(name) < bound;
                 }
                 else {
                     Log.i("DreamLife", "IsSkill_LT");
@@ -237,7 +269,7 @@ public class Utilities {
             default:  //Greater than
                 if(currentChar.isAttribute(name)) {
                     Log.i("DreamLife", "IsAttr_GT");
-                    return (Float)currentChar.getAttrLevel(name) > bound;
+                    return (int)currentChar.getAttrLevel(name) > bound;
                 }
                 else {
                     Log.i("DreamLife", "IsSkill_GT");
@@ -252,14 +284,37 @@ public class Utilities {
             try {
                 JSONObject neededItem = itemArray.getJSONObject(i);
 
-                String itemID = neededItem.keys().next();
-                Integer qty = neededItem.getInt(itemID);
+                if(neededItem == JSONObject.NULL) { return true; }
 
-                if(!currentChar.ownsItem(Integer.valueOf(itemID))) { return false; }
-                if(currentChar.getOwnedItemQty(Integer.valueOf(itemID)) < qty) { return false; }
+                String itemID = "";
+                Iterator<String> itemKeys = neededItem.keys();
+                while(itemKeys.hasNext()) {
+                    itemID = itemKeys.next();
+                }
+                Log.d("DreamLife", "ItemID " + itemID);
+                Integer qty = neededItem.getInt(itemID);
+                Log.d("DreamLife", "Qty " + qty);
+
+                if(!currentChar.ownsItem(Integer.valueOf(itemID))) {
+                    Log.d("DreamLife", "ItemNotOwned");
+                    if(qty > 0) { return false; }
+                }
+                else {
+                    int ownedQty = currentChar.getOwnedItemQty(Integer.valueOf(itemID));
+                    if(ownedQty < qty) {
+                       Log.d("DreamLife", "ItemOwned");
+                       return false;
+                    }
+                    if(ownedQty > qty && qty == 0) {
+                        Log.d("DreamLife", "DesiredZero");
+                        return false;
+                    }
+                }
             }
             catch(Exception e) {
                 Log.d("DreamLife", e.toString());
+
+                return false;
             }
         }
 

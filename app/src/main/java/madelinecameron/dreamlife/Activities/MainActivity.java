@@ -194,6 +194,7 @@ public class MainActivity extends AppCompatActivity {
          * fragment.
          */
         private static final String ARG_SECTION_NUMBER = "section_number";
+        private static View rootView;
 
         /**
          * Returns a new instance of this fragment for the given section
@@ -212,11 +213,68 @@ public class MainActivity extends AppCompatActivity {
         public PlaceholderFragment() {
         }
 
+        public void loadList() {
+            Bundle args = getArguments();
+            PageType pageType = PageType.HOME;
+            switch(args.getInt(ARG_SECTION_NUMBER)) {
+                case 1:  //Personal page
+                    pageType = PageType.PERSONAL;
+                    break;
+                case 2:
+                    pageType = PageType.WORK;
+                    break;
+                case 3:
+                    pageType = PageType.EDUCATION;
+                    break;
+                case 4:
+                    pageType = PageType.SHOP;
+                    break;
+            }
+
+            try {
+                ArrayAdapter<String> actionList = null;
+                Log.d("DreamLife", String.format("Get all for %s", pageType.toString()));
+                final HashMap<String, Action> aList = GameState.getValidActions(pageType);
+                Log.d("DreamLife", String.format("Number of valid actions: %d", aList.size()));
+
+                String[] actionArray = new String[aList.size()];
+                aList.keySet().toArray(actionArray);
+                actionList = new ArrayAdapter<String>(getContext(), R.layout.action_layout, actionArray);
+
+                ListView actionView = (ListView) rootView.findViewById(R.id.action_list);
+                actionView.setAdapter(actionList);
+
+                actionView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        Action clickedAction = aList.get(parent.getItemAtPosition(position).toString());
+
+                        clickedAction.applyAction();
+
+                        Log.d("DreamLife", "Loading");
+                        loadList();
+                    }
+                });
+            }
+            catch(Exception e) {
+                Log.e("DreamLife", e.toString());
+            }
+        }
+        @Override
+        public void setUserVisibleHint(boolean isVisibleToUser) {
+            super.setUserVisibleHint(isVisibleToUser);
+
+            // Make sure that we are currently visible
+            if (this.isVisible()) {
+                loadList();
+            }
+        }
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
 
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            this.rootView = inflater.inflate(R.layout.fragment_main, container, false);
             Bundle args = getArguments();
             PageType pageType = PageType.HOME;
             switch(args.getInt(ARG_SECTION_NUMBER)) {
@@ -240,7 +298,7 @@ public class MainActivity extends AppCompatActivity {
                 ArrayAdapter<String> actionList = null;
                 Log.d("DreamLife", String.format("Get all for %s", pageType.toString()));
                 final HashMap<String, Action> aList = GameState.getValidActions(pageType);
-                Log.d("DreamLife", String.format("ValidGot: %d", aList.size()));
+                Log.d("DreamLife", String.format("Number of valid actions: %d", aList.size()));
 
                 String[] actionArray = new String[aList.size()];
                 aList.keySet().toArray(actionArray);
@@ -256,7 +314,8 @@ public class MainActivity extends AppCompatActivity {
 
                         clickedAction.applyAction();
 
-                        Log.d("DreamLife", "CLICKED! " + clickedAction.name);
+                        Log.d("DreamLife", "Loading");
+                        loadList();
                     }
                 });
 

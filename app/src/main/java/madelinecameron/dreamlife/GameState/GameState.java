@@ -108,10 +108,7 @@ public class GameState {
             String currentKey = actionNames.next();
             Action currentAction = allActions.get(currentKey);
 
-            Log.d("DreamLife", type.name() + " " + currentAction.type.name());
             if(type.name() != currentAction.type.name()) {
-                Log.d("DreamLife", "Continue");
-                Log.d("DreamLife", type.name() + " " + currentAction.type.name());
                 continue;
             }
 
@@ -130,13 +127,13 @@ public class GameState {
                     switch (neededName.toUpperCase()) {
                         case "ITEM":
                             if (!Utilities.hasAllReqItems(neededCriteria.getJSONArray(neededName), getGameCharacter())) {
-                                Log.i("DreamLife", "Fail2");
+                                Log.i("DreamLife", "Failed");
                                 allNeedsMet = false;
                             }
                             break;
                         default: //Skills
                             if (!Utilities.conditionFulfilled(neededName, neededCriteria.get(neededName).toString(), getGameCharacter())) {
-                                Log.i("DreamLife", "Fail1");
+                                Log.i("DreamLife", "Failed");
                                 allNeedsMet = false;
                             }
                             break;
@@ -153,11 +150,10 @@ public class GameState {
                 validActions.put(currentKey, currentAction);
             }
             else {
-                Log.i("DreamLife", "Failed");
+                Log.i("DreamLife", "FailedOverall");
             }
         }
 
-        Log.i("DreamLife", "ValidSize: " + String.valueOf(validActions.size()));
         return validActions;
     }
 

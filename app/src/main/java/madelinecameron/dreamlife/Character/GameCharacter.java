@@ -17,7 +17,7 @@ import madelinecameron.dreamlife.Misc.Utilities;
 public class GameCharacter {
     private HashMap<String, Object> attributes = new HashMap<>();
     private HashMap<Integer, Integer> ownedItems = new HashMap<>();
-    private HashMap<String, Float> skillMap = new HashMap<>();
+    private HashMap<String, Integer> skillMap = new HashMap<>();
     private HashMap<String, Float> progressMap = new HashMap<>();
 
     public GameCharacter() {
@@ -28,13 +28,15 @@ public class GameCharacter {
         attributes.put("PassiveIncome", 0);
         attributes.put("Karma", 0);
         attributes.put("Age", 18);
+        attributes.put("HasJob", 0);
+        attributes.put("IsStudying", 0);
         attributes.put("Education", Education.HIGH_SCHOOL);
         attributes.put("Home", Home.HOMELESS);
     }
 
     public HashMap<String, Object> heartbeat() {
-        Float Money = (Float)attributes.get("Money");
-        attributes.put("Money", Money + (Float)attributes.get("PassiveIncome"));
+        Integer money = (int)attributes.get("Money");
+        attributes.put("Money", money + (int)attributes.get("PassiveIncome"));
 
         return attributes;
     }
@@ -47,17 +49,28 @@ public class GameCharacter {
     public boolean isAttribute(String name) { return attributes.containsKey(name); }
     public Boolean ownsItem(Integer itemID) { return ownedItems.containsKey(itemID); }
     public Integer getOwnedItemQty(Integer itemID) { return ownedItems.get(itemID); }
-    public Float getSkillLevel(String skillName) { return skillMap.get(skillName); }
+    public Integer getSkillLevel(String skillName) { return skillMap.get(skillName); }
     public Object getAttrLevel(String attrName) { return attributes.get(attrName); }
     public Float getProgression(String name) { return progressMap.get(name); }
 
-    public void modifyAttrOrSkill(String name, float updateValue) {
-        Log.i("DreamLife", "AAA");
-        if(isAttribute(name)) { attributes.put(name, (int)attributes.get(name) + (int)updateValue); }
+    public void modifyAttrOrSkill(String name, Integer updateValue) {
+        Log.i("DreamLife", updateValue.toString());
+        if(isAttribute(name)) { attributes.put(name, Integer.valueOf(attributes.get(name).toString()) + updateValue); }
         else { skillMap.put(name, skillMap.get(name) + updateValue); }
     }
-    public void addSkill(String skillName) { skillMap.put(skillName, 0.0f); }
-    public void addItem(Integer itemID) { ownedItems.put(itemID, ownedItems.get(itemID) + 1); }
+    public void addSkill(String skillName) { skillMap.put(skillName, 0); }
+    public void addItem(Integer itemID) {
+        if(ownsItem(itemID)) {
+            ownedItems.put(itemID, ownedItems.get(itemID) + 1);
+        }
+        else {
+            ownedItems.put(itemID, 1);
+        }
+
+        Log.d("DreamLife", ownedItems.get(itemID).toString());
+
+        GameState.addGameEvent(new GameEvent(String.format("%d added", itemID), GameEventType.ITEM_ADDED));
+    }
     public void addItem(Integer itemID, Integer qty) {
         if(ownsItem(itemID)) {
             ownedItems.put(itemID, ownedItems.get(itemID) + qty);
@@ -65,6 +78,8 @@ public class GameCharacter {
         else {
             ownedItems.put(itemID, qty);
         }
+
+        Log.d("DreamLife", ownedItems.get(itemID).toString());
 
         GameState.addGameEvent(new GameEvent(String.format("%d added", itemID), GameEventType.ITEM_ADDED));
     }
@@ -82,7 +97,7 @@ public class GameCharacter {
     public boolean buyItem(Item item) {
         try {
             Utilities.causeEffects(item.results, this);
-            modifyAttrOrSkill("Money", (Float)getAttrLevel("Money") - Float.valueOf(item.cost));
+            modifyAttrOrSkill("Money", (int)getAttrLevel("Money") - item.cost);
 
             if(ownedItems.containsKey(item.id)) {
                 ownedItems.put(item.id, ownedItems.get(item.id));
@@ -105,7 +120,7 @@ public class GameCharacter {
     public boolean sellItem(Item item) {
         try {
             Utilities.removeEffects(item.results, this);
-            modifyAttrOrSkill("Money", (Float)getAttrLevel("Money") + item.getSellCost());
+            modifyAttrOrSkill("Money", (int)getAttrLevel("Money") + item.getSellCost());
 
             ownedItems.put(item.id, ownedItems.get(item.id) - 1);
 

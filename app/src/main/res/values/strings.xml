@@ -9,8 +9,8 @@
     <string name="title_activity_main">MainActivity</string>
 
     <string name="title_page1">Personal</string>
-    <string name="title_page2">Education</string>
-    <string name="title_page3">Work</string>
+    <string name="title_page2">Work</string>
+    <string name="title_page3">Education</string>
     <string name="title_page4">Shop</string>
 
 <!-- TODO: Remove or change this placeholder text -->
