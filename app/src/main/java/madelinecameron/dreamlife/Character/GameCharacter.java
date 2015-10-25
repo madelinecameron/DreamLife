@@ -16,7 +16,7 @@ import madelinecameron.dreamlife.Misc.Utilities;
  */
 public class GameCharacter {
     private HashMap<String, Object> attributes = new HashMap<>();
-    private HashMap<Integer, Integer> ownedItems = new HashMap<>();
+    private static HashMap<Integer, Integer> ownedItems = new HashMap<>();
     private HashMap<String, Integer> skillMap = new HashMap<>();
     private HashMap<String, Float> progressMap = new HashMap<>();
 
@@ -24,6 +24,9 @@ public class GameCharacter {
         attributes.put("Energy", 0);
         attributes.put("Food", 100);
         attributes.put("Fun", 100);
+        attributes.put("Energy_Lim", 100);
+        attributes.put("Food_Lim", 100);
+        attributes.put("Fun_Lim", 100);
         attributes.put("Money", 100);
         attributes.put("PassiveIncome", 0);
         attributes.put("Karma", 0);
@@ -60,6 +63,7 @@ public class GameCharacter {
     }
     public void addSkill(String skillName) { skillMap.put(skillName, 0); }
     public void addItem(Integer itemID) {
+        Log.d("DreamLife", "Adding item...");
         if(ownsItem(itemID)) {
             ownedItems.put(itemID, ownedItems.get(itemID) + 1);
         }
@@ -67,21 +71,42 @@ public class GameCharacter {
             ownedItems.put(itemID, 1);
         }
 
-        Log.d("DreamLife", ownedItems.get(itemID).toString());
-
-        GameState.addGameEvent(new GameEvent(String.format("%d added", itemID), GameEventType.ITEM_ADDED));
-    }
-    public void addItem(Integer itemID, Integer qty) {
-        if(ownsItem(itemID)) {
-            ownedItems.put(itemID, ownedItems.get(itemID) + qty);
+        String message = Utilities.getItemRecievedMessage(itemID);
+        Log.d("DreamLife", "message: " + message);
+        if(message != null) {
+            Log.d("DreamLife", "Non-null message");
+            GameState.addGameEvent(new GameEvent(message, GameEventType.ITEM_ADDED));
         }
         else {
-            ownedItems.put(itemID, qty);
+            Item item = GameState.getItem(itemID);
+            Log.d("DreamLife", "Null message");
+            if(item.shouldDisplay) {
+                GameState.addGameEvent(new GameEvent(String.format("Received %s", item.name), GameEventType.ITEM_ADDED));
+            }
+        }
+    }
+    public void addItem(Integer itemID, Integer qty) {
+        Log.d("DreamLife", "Adding item...");
+        if(ownsItem(itemID)) {
+            ownedItems.put(itemID, ownedItems.get(itemID) + 1);
+        }
+        else {
+            ownedItems.put(itemID, 1);
         }
 
-        Log.d("DreamLife", ownedItems.get(itemID).toString());
-
-        GameState.addGameEvent(new GameEvent(String.format("%d added", itemID), GameEventType.ITEM_ADDED));
+        String message = Utilities.getItemRecievedMessage(itemID);
+        Log.d("DreamLife", "message: " + message);
+        if(message != null) {
+            Log.d("DreamLife", "Non-null message");
+            GameState.addGameEvent(new GameEvent(message, GameEventType.ITEM_ADDED));
+        }
+        else {
+            Item item = GameState.getItem(itemID);
+            Log.d("DreamLife", "Null message");
+            if(item.shouldDisplay) {
+                GameState.addGameEvent(new GameEvent(String.format("Received %s", item.name), GameEventType.ITEM_ADDED));
+            }
+        }
     }
     public void updateProgress(String name, Float progression) {
         if(progressMap.containsKey(name)) {

@@ -18,9 +18,10 @@ public class Item {
     public Boolean canPurchase;
     public JSONObject needed;
     public JSONObject results;
+    public String itemReceivedMessage;
 
-    public Item(Integer id, String name, Integer cost,
-                Boolean shouldDisplay, Boolean canPurchase, Boolean canSell, JSONObject needed, JSONObject results) {
+    public Item(Integer id, String name, Integer cost, Boolean shouldDisplay, Boolean canPurchase,
+                Boolean canSell, JSONObject needed, JSONObject results, String itemMessage) {
         this.id = id;
         this.name = name;
         this.cost = cost;
@@ -29,6 +30,7 @@ public class Item {
         this.canPurchase = canPurchase;
         this.needed = needed;
         this.results = results;
+        this.itemReceivedMessage = itemMessage;
     }
 
     public Integer getSellCost() {

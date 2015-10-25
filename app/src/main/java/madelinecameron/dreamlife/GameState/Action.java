@@ -30,7 +30,5 @@ public class Action {
         this.needed = needed;
     }
 
-    public void applyAction() {
-        Utilities.causeEffects(effect, GameState.getGameCharacter());
-    }
+    public void applyAction() { Utilities.causeEffects(effect, GameState.getGameCharacter()); }
 }

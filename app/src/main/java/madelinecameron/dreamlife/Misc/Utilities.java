@@ -15,6 +15,7 @@ import java.util.Set;
 
 import madelinecameron.dreamlife.Character.GameCharacter;
 import madelinecameron.dreamlife.GameState.GameState;
+import madelinecameron.dreamlife.GameState.Item;
 
 /**
  * Created by madel on 9/15/2015.
@@ -26,7 +27,6 @@ public class Utilities {
 
     private static double parseModifier(JSONArray modifierArray, double basePercent) {
         GameCharacter currentChar = GameState.getGameCharacter();
-        Log.i("DreamLife", "ParseModifier");
         for(int i = 0; i < modifierArray.length(); i++) {
             try {
                 JSONObject selectedObj = modifierArray.getJSONObject(i);
@@ -34,25 +34,18 @@ public class Utilities {
                 while (objKeys.hasNext()) {
                     try {
                         String key = objKeys.next();
-                        Log.i("DreamLife", key);
                         Double value = Double.valueOf(selectedObj.getString(key));
 
                         if (key.matches("^[0-9]*$")) {  //If key is item
-                            Log.i("DreamLife", "ItemKey");
                             if (currentChar.ownsItem(Integer.valueOf(key))) {
                                 basePercent += (currentChar.getOwnedItemQty(Integer.valueOf(key)) * value);
-                                Log.i("DreamLife", String.valueOf(basePercent));
                             }
                         } else {
                             if (currentChar.hasSkill(key)) {
-                                Log.i("DreamLife", "SkillKey");
                                 basePercent += (currentChar.getSkillLevel(key) * value);
-                                Log.i("DreamLife", String.valueOf(basePercent));
                             } else {
                                 if (currentChar.isAttribute(key)) {
-                                    Log.i("DreamLife", "AttrKey");
                                     basePercent += (Double.valueOf(currentChar.getAttrLevel(key).toString()) * value);
-                                    Log.i("DreamLife", String.valueOf(basePercent));
                                 }
                             }
                         }
@@ -177,6 +170,37 @@ public class Utilities {
                         Log.e("DreamLife", e.toString());
                     }
                     break;
+                case "WORLD":
+                    try {
+                        Log.d("DreamLife", "WorldAttr");
+                        String value = effects.getString(key).replace(" ", "");
+                        Integer modifyValue;
+
+                        if(value.contains("RA")) {
+                            Integer lowerBound = Integer.valueOf(value.substring(2, value.indexOf("-")));
+                            Integer upperBound = Integer.valueOf(value.substring(value.indexOf("-") + 1));
+
+                            modifyValue = new Random().nextInt(upperBound - lowerBound) + lowerBound;
+                        }
+                        else {
+                            if (value.matches("^[A-Za-z]*$")) {
+                                String booleanVal = value;
+                                modifyValue = 0;
+                                if (Boolean.valueOf(booleanVal)) {
+                                    modifyValue = 1;
+                                }
+                            } else {
+                                modifyValue = Integer.valueOf(value);
+                            }
+                        }
+
+                        Log.d("DreamLife", "Modifying " + key + " by " + modifyValue.toString());
+                        GameState.modifyWorldAttribute(key, modifyValue);
+                    }
+                    catch(Exception e) {
+                        Log.e("DreamLife", e.toString());
+                    }
+                    break;
                 default:  //Attr / skill modifiers
                     try {
                         String value = effects.getString(key).replace(" ", "");
@@ -225,14 +249,11 @@ public class Utilities {
         if(condition.length() > 2) {
             if(condition.matches("^[A-Za-z]*$")) {
                 if(currentChar.isAttribute(name)) {
-                    Log.d("DreamLife", "AllChar_EQ");
                     String booleanVal = condition;
                     int booleanInt = 0;
                     if (Boolean.valueOf(booleanVal)) {
                         booleanInt = 1;
                     }
-                    Log.d("DreamLife", GameState.getGameCharacter().getAttrLevel(name).toString());
-                    Log.d("DreamLife", String.valueOf(booleanInt));
                     return GameState.getGameCharacter().getAttrLevel(name) == booleanInt;
                 }
                 else {
@@ -242,40 +263,37 @@ public class Utilities {
             else {
                 if (condition.substring(0, 2).matches("([A-Za-z]{2})")) {
                     func = condition.substring(0, 2);
-                    Log.i("DreamLife", "Bound0");
                     bound = Integer.valueOf(condition.substring(2));
                 } else {
-                    Log.i("DreamLife", "Bound1");
-                    Log.i("DreamLife", condition);
                     bound = Integer.valueOf(condition);
                 }
             }
         }
         else {
-            Log.i("DreamLife", "Bound2");
             bound = Integer.valueOf(condition);
         }
 
         switch(func) {
             case "LT":  //Less than
                 if(currentChar.isAttribute(name)) {
-                    Log.i("DreamLife", "IsAttr_LT");
                     return (int)currentChar.getAttrLevel(name) < bound;
                 }
                 else {
-                    Log.i("DreamLife", "IsSkill_LT");
                     return currentChar.hasSkill(name) && currentChar.getSkillLevel(name) < bound;
                 }
             default:  //Greater than
                 if(currentChar.isAttribute(name)) {
-                    Log.i("DreamLife", "IsAttr_GT");
                     return (int)currentChar.getAttrLevel(name) > bound;
                 }
                 else {
-                    Log.i("DreamLife", "IsSkill_GT");
                     return currentChar.hasSkill(name) && currentChar.getSkillLevel(name) > bound;
                 }
         }
+    }
+
+    public static String getItemRecievedMessage(int itemID) {
+        Item item = GameState.getItem(itemID);
+        return item.itemReceivedMessage;
     }
 
     public static boolean hasAllReqItems(JSONArray itemArray, GameCharacter currentChar) {
@@ -291,22 +309,17 @@ public class Utilities {
                 while(itemKeys.hasNext()) {
                     itemID = itemKeys.next();
                 }
-                Log.d("DreamLife", "ItemID " + itemID);
                 Integer qty = neededItem.getInt(itemID);
-                Log.d("DreamLife", "Qty " + qty);
 
                 if(!currentChar.ownsItem(Integer.valueOf(itemID))) {
-                    Log.d("DreamLife", "ItemNotOwned");
                     if(qty > 0) { return false; }
                 }
                 else {
                     int ownedQty = currentChar.getOwnedItemQty(Integer.valueOf(itemID));
                     if(ownedQty < qty) {
-                       Log.d("DreamLife", "ItemOwned");
                        return false;
                     }
                     if(ownedQty > qty && qty == 0) {
-                        Log.d("DreamLife", "DesiredZero");
                         return false;
                     }
                 }

@@ -1,5 +1,6 @@
 package madelinecameron.dreamlife.Activities;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
@@ -26,6 +27,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import madelinecameron.dreamlife.GameState.Action;
+import madelinecameron.dreamlife.GameState.GameEvent;
 import madelinecameron.dreamlife.GameState.GameState;
 import madelinecameron.dreamlife.R;
 
@@ -195,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
          */
         private static final String ARG_SECTION_NUMBER = "section_number";
         private static View rootView;
+        private ArrayAdapter<String> actionList = null;
 
         /**
          * Returns a new instance of this fragment for the given section
@@ -232,29 +235,36 @@ public class MainActivity extends AppCompatActivity {
             }
 
             try {
-                ArrayAdapter<String> actionList = null;
+                ArrayList<String> actionNameList = new ArrayList<>();
                 Log.d("DreamLife", String.format("Get all for %s", pageType.toString()));
-                final HashMap<String, Action> aList = GameState.getValidActions(pageType);
-                Log.d("DreamLife", String.format("Number of valid actions: %d", aList.size()));
-
-                String[] actionArray = new String[aList.size()];
-                aList.keySet().toArray(actionArray);
-                actionList = new ArrayAdapter<String>(getContext(), R.layout.action_layout, actionArray);
+                final HashMap<String, Action> actionMap = GameState.getValidActions(pageType);
+                actionNameList.addAll(actionMap.keySet());
+                Log.d("DreamLife", String.format("Number of valid actions: %d", actionNameList.size()));
 
                 ListView actionView = (ListView) rootView.findViewById(R.id.action_list);
-                actionView.setAdapter(actionList);
 
                 actionView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        Action clickedAction = aList.get(parent.getItemAtPosition(position).toString());
+                        Action clickedAction = actionMap.get(parent.getItemAtPosition(position).toString());
 
                         clickedAction.applyAction();
-
+                        while (GameState.hasMoreGameEvents()) {
+                            Log.d("DreamLife", "Toast");
+                            GameEvent event = GameState.getNextGameEvent();
+                            event.popMessageToast(getContext());
+                        }
                         Log.d("DreamLife", "Loading");
                         loadList();
                     }
                 });
+
+                Log.d("DreamLife", "Reloading list");
+                actionList.clear();
+                Log.d("DreamLife", "1");
+                actionList.addAll(actionNameList);
+                Log.d("DreamLife", "23");
+                actionList.notifyDataSetChanged();
             }
             catch(Exception e) {
                 Log.e("DreamLife", e.toString());
@@ -295,14 +305,13 @@ public class MainActivity extends AppCompatActivity {
             Log.d("DreamLife", pageType.name());
 
             try {
-                ArrayAdapter<String> actionList = null;
+                ArrayList<String> actionNameList = new ArrayList<>();
                 Log.d("DreamLife", String.format("Get all for %s", pageType.toString()));
-                final HashMap<String, Action> aList = GameState.getValidActions(pageType);
-                Log.d("DreamLife", String.format("Number of valid actions: %d", aList.size()));
+                final HashMap<String, Action> actionMap = GameState.getValidActions(pageType);
+                actionNameList.addAll(actionMap.keySet());
+                Log.d("DreamLife", String.format("Number of valid actions: %d", actionNameList.size()));
 
-                String[] actionArray = new String[aList.size()];
-                aList.keySet().toArray(actionArray);
-                actionList = new ArrayAdapter<String>(getContext(), R.layout.action_layout, actionArray);
+                actionList = new ArrayAdapter<String>(getContext(), R.layout.action_layout, actionNameList);
 
                 ListView actionView = (ListView) rootView.findViewById(R.id.action_list);
                 actionView.setAdapter(actionList);
@@ -310,10 +319,14 @@ public class MainActivity extends AppCompatActivity {
                 actionView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        Action clickedAction = aList.get(parent.getItemAtPosition(position).toString());
+                        Action clickedAction = actionMap.get(parent.getItemAtPosition(position).toString());
 
                         clickedAction.applyAction();
-
+                        while(GameState.hasMoreGameEvents()) {
+                            Log.d("DreamLife", "Toast");
+                            GameEvent event = GameState.getNextGameEvent();
+                            event.popMessageToast(getContext());
+                        }
                         Log.d("DreamLife", "Loading");
                         loadList();
                     }

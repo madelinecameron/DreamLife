@@ -28,18 +28,21 @@ public class GameState {
     private static HashMap<Integer, Item> allItems = new HashMap<>();
     private static HashMap<String, Action> allActions = new HashMap<>();
     private static Queue<GameEvent> eventQueue = new LinkedList<>();
+    private static HashMap<String, Object> worldAttributes = new HashMap<>();
 
     public GameState(Context context) {
         this.db = new DBManager(context);
         this.gameCharacter = new GameCharacter();
         this.context = context;
+
+        worldAttributes.put("Days", 0);
+        worldAttributes.put("Years", 0);
     }
 
     public static void loadAllItems() {
         try {
             Log.i("DreamLife", "Loading all items...");
             Cursor selectCursor = db.openDB().rawQuery("SELECT * FROM Items", null);
-            Log.d("DreamLife", String.valueOf(selectCursor.getCount()));
 
             while (selectCursor.moveToNext()) {
                 try {
@@ -51,10 +54,9 @@ public class GameState {
                     Boolean saleable = Boolean.valueOf(selectCursor.getString(selectCursor.getColumnIndex("Saleable")));
                     JSONObject needed = new JSONObject(selectCursor.getString(selectCursor.getColumnIndex("Needed")));
                     JSONObject results = new JSONObject(selectCursor.getString(selectCursor.getColumnIndex("Result")));
+                    String message = selectCursor.getString(selectCursor.getColumnIndex("Message"));
 
-                    allItems.put(id, new Item(id, name, cost, display, purchasable, saleable, needed, results));
-
-                    Log.i("DreamLife", String.format("%s added to all item list", name));
+                    allItems.put(id, new Item(id, name, cost, display, purchasable, saleable, needed, results, message));
                 } catch (Exception e) {
                     Log.e("DreamLife", e.toString());
                 }
@@ -70,7 +72,6 @@ public class GameState {
         try {
             Log.i("DreamLife", "Loading all actions...");
             Cursor selectCursor = db.openDB().rawQuery("SELECT * FROM Actions", null);
-            Log.d("DreamLife", String.valueOf(selectCursor.getCount()));
 
             while (selectCursor.moveToNext()) {
                 try {
@@ -82,8 +83,6 @@ public class GameState {
                     JSONObject results = new JSONObject(selectCursor.getString(selectCursor.getColumnIndex("Result")));
 
                     allActions.put(name, new Action(id, name, descrip, pageType, needed, results));
-
-                    Log.i("DreamLife", String.format("%s added to all action list", name));
                 } catch (Exception e) {
                     Log.e("DreamLife", e.toString());
                 }
@@ -98,6 +97,32 @@ public class GameState {
     public static Integer getItemCount() { return allItems.keySet().size(); }
     public static GameCharacter getGameCharacter() { return gameCharacter; }
     public static GameEvent getNextGameEvent() { return eventQueue.poll(); }
+    public static boolean hasMoreGameEvents() { return eventQueue.size() > 0; }
+    public static Item getItem(int itemID) { return allItems.get(itemID); }
+    public static boolean isBirthday() {
+        if(worldAttributes.get("Days") == 365) {
+            worldAttributes.put("Years", Integer.parseInt(worldAttributes.get("Years").toString()) + 1);
+            worldAttributes.put("Days", 0);
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    public static void modifyWorldAttribute(String key, Integer modifier) {
+        if(worldAttributes.containsKey(key)) {
+            worldAttributes.put(key, Integer.parseInt(worldAttributes.get(key).toString()) + modifier);
+        }
+        else {
+            worldAttributes.put(key, modifier);
+        }
+    }
+
+    public static void setWorldAttribute(String key, Object modifier) {
+        worldAttributes.put(key, modifier);
+    }
+
 
     public static HashMap<String, Action> getValidActions(PageType type) {
         boolean allNeedsMet;
@@ -116,24 +141,18 @@ public class GameState {
             Iterator<String> actionCriterias = neededCriteria.keys();
             allNeedsMet = true;
 
-            Log.i("DreamLife", currentAction.name);
-
             while(actionCriterias.hasNext() && allNeedsMet) {
 
                 String neededName = actionCriterias.next();
-                Log.d("DreamLife", neededName);
-
                 try {
                     switch (neededName.toUpperCase()) {
                         case "ITEM":
                             if (!Utilities.hasAllReqItems(neededCriteria.getJSONArray(neededName), getGameCharacter())) {
-                                Log.i("DreamLife", "Failed");
                                 allNeedsMet = false;
                             }
                             break;
                         default: //Skills
                             if (!Utilities.conditionFulfilled(neededName, neededCriteria.get(neededName).toString(), getGameCharacter())) {
-                                Log.i("DreamLife", "Failed");
                                 allNeedsMet = false;
                             }
                             break;
@@ -146,11 +165,9 @@ public class GameState {
             }
 
             if(allNeedsMet) {
-                Log.i("DreamLife", "Valid");
                 validActions.put(currentKey, currentAction);
             }
             else {
-                Log.i("DreamLife", "FailedOverall");
             }
         }
 
@@ -176,13 +193,11 @@ public class GameState {
                     switch (neededName.toUpperCase()) {
                         case "ITEM":
                             if (!Utilities.hasAllReqItems(neededCriteria.getJSONArray(neededName), getGameCharacter())) {
-                                Log.i("DreamLife", "Fail");
                                 allNeedsMet = false;
                             }
                             break;
                         default: //Skills
                             if (!Utilities.conditionFulfilled(neededName, neededCriteria.get(neededName).toString(), getGameCharacter())) {
-                                Log.i("DreamLife", "Fail");
                                 allNeedsMet = false;
                             }
                             break;
@@ -194,7 +209,6 @@ public class GameState {
             }
 
             if(allNeedsMet) {
-                Log.i("DreamLife", "valid");
                 validItems.put(currentItem.id, currentItem);
             }
         }
@@ -203,6 +217,8 @@ public class GameState {
     }
 
     public static void addGameEvent(GameEvent e) {
+        Log.d("DreamLife", "Adding GameEvent");
+        Log.d("DreamLife", e.getMessage());
         eventQueue.add(e);
     }
 }
