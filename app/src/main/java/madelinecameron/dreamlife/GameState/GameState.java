@@ -39,6 +39,10 @@ public class GameState {
         worldAttributes.put("Years", 0);
     }
 
+    public static HashMap<String, Object> worldHeartbeat() {
+        return worldAttributes;
+    }
+
     public static void loadAllItems() {
         try {
             Log.i("DreamLife", "Loading all items...");
@@ -99,6 +103,8 @@ public class GameState {
     public static GameEvent getNextGameEvent() { return eventQueue.poll(); }
     public static boolean hasMoreGameEvents() { return eventQueue.size() > 0; }
     public static Item getItem(int itemID) { return allItems.get(itemID); }
+    public static Action getAction(String actionName) { return allActions.get(actionName); }
+
     public static boolean isBirthday() {
         if(worldAttributes.get("Days") == 365) {
             worldAttributes.put("Years", Integer.parseInt(worldAttributes.get("Years").toString()) + 1);

@@ -16,18 +16,20 @@ import madelinecameron.dreamlife.Misc.Utilities;
  */
 public class GameCharacter {
     private HashMap<String, Object> attributes = new HashMap<>();
+    private HashMap<String, Object> attributeLimits = new HashMap<>();
     private static HashMap<Integer, Integer> ownedItems = new HashMap<>();
     private HashMap<String, Integer> skillMap = new HashMap<>();
     private HashMap<String, Float> progressMap = new HashMap<>();
 
     public GameCharacter() {
-        attributes.put("Energy", 0);
+        attributes.put("Energy", 100);
         attributes.put("Food", 100);
         attributes.put("Fun", 100);
-        attributes.put("Energy_Lim", 100);
-        attributes.put("Food_Lim", 100);
-        attributes.put("Fun_Lim", 100);
-        attributes.put("Money", 100);
+        attributeLimits.put("Energy", 100);
+        attributeLimits.put("Food", 100);
+        attributeLimits.put("Fun", 100);
+
+        attributes.put("Money", 300);
         attributes.put("PassiveIncome", 0);
         attributes.put("Karma", 0);
         attributes.put("Age", 18);
@@ -54,12 +56,30 @@ public class GameCharacter {
     public Integer getOwnedItemQty(Integer itemID) { return ownedItems.get(itemID); }
     public Integer getSkillLevel(String skillName) { return skillMap.get(skillName); }
     public Object getAttrLevel(String attrName) { return attributes.get(attrName); }
+    public Object getAttrLimit(String attrName) { return attributeLimits.get(attrName); }
     public Float getProgression(String name) { return progressMap.get(name); }
 
     public void modifyAttrOrSkill(String name, Integer updateValue) {
-        Log.i("DreamLife", updateValue.toString());
-        if(isAttribute(name)) { attributes.put(name, Integer.valueOf(attributes.get(name).toString()) + updateValue); }
-        else { skillMap.put(name, skillMap.get(name) + updateValue); }
+        if(isAttribute(name)) {
+            if(Integer.valueOf(attributes.get(name).toString()) + updateValue < 0) {
+                attributes.put(name, 0);
+            }
+            else {
+                if (attributeLimits.containsKey(name)) {  // Check for upper limit
+                    if (Integer.valueOf(attributes.get(name).toString()) + updateValue <= Integer.valueOf(attributeLimits.get(name).toString())) {
+                        attributes.put(name, Integer.valueOf(attributes.get(name).toString()) + updateValue);
+                    } else {
+                        attributes.put(name, Integer.valueOf(attributeLimits.get(name).toString())); //Set to max
+                    }
+                }
+                else {
+                    attributes.put(name, Integer.valueOf(attributes.get(name).toString()) + updateValue);
+                }
+            }
+        }
+        else {
+            skillMap.put(name, skillMap.get(name) + updateValue);
+        }
     }
     public void addSkill(String skillName) { skillMap.put(skillName, 0); }
     public void addItem(Integer itemID) {

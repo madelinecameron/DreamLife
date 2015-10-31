@@ -1,8 +1,8 @@
 package madelinecameron.dreamlife.Activities;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Locale;
 
 import android.os.Handler;
@@ -26,6 +26,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import madelinecameron.dreamlife.Character.GameCharacter;
 import madelinecameron.dreamlife.GameState.Action;
 import madelinecameron.dreamlife.GameState.GameEvent;
 import madelinecameron.dreamlife.GameState.GameState;
@@ -83,35 +84,49 @@ public class MainActivity extends AppCompatActivity {
         final ProgressBar energyBar = (ProgressBar) findViewById(R.id.energy_bar);
         final ProgressBar foodBar = (ProgressBar) findViewById(R.id.food_bar);
         final ProgressBar funBar = (ProgressBar) findViewById(R.id.fun_bar);
+        final TextView moneyText = (TextView) findViewById(R.id.money_text);
+        final TextView dateText = (TextView) findViewById(R.id.date_text);
+        final TextView jobText = (TextView) findViewById(R.id.job_text);
 
         uiHandler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message input) {
                 HashMap<String, Object> updateMap = (HashMap<String, Object>)input.obj;
                 for(String s : updateMap.keySet()) {
-                    Integer updateValue;  //Done because of enums not casting to int
+                    Integer updateValue = 0;  //Done because of enums not casting to int
                     switch(s.toUpperCase()) {
                         case "ENERGY":
                             updateValue = Integer.valueOf(updateMap.get(s).toString());
                             if (energyBar.getProgress() != updateValue) {  //Update energy
+                                int attrMax = Integer.valueOf(GameState.getGameCharacter().getAttrLimit(s).toString());
                                 energyBar.setProgress(updateValue);
-                                energyText.setText(updateValue.toString() + "/100");
+                                energyText.setText(updateValue.toString() + "/" + attrMax);
                             }
                             break;
                         case "FOOD":
                             updateValue = Integer.valueOf(updateMap.get(s).toString());
                             if (foodBar.getProgress() != updateValue) {  //Update food
+                                int attrMax = Integer.valueOf(GameState.getGameCharacter().getAttrLimit(s).toString());
                                 foodBar.setProgress(updateValue);
-                                foodText.setText(updateValue.toString() + "/100");
+                                foodText.setText(updateValue.toString() + "/" + attrMax);
                             }
                             break;
                         case "FUN":
                             updateValue = Integer.valueOf(updateMap.get(s).toString());
                             if (funBar.getProgress() != updateValue) {  //Update fun
+                                int attrMax = Integer.valueOf(GameState.getGameCharacter().getAttrLimit(s).toString());
                                 funBar.setProgress(updateValue);
-                                funText.setText(updateValue.toString() + "/100");
+                                funText.setText(updateValue.toString() + "/" + attrMax);
                             }
                             break;
+                        case "MONEY":
+                            updateValue = Integer.valueOf(updateMap.get(s).toString());
+                            if (Integer.valueOf(moneyText.getText().toString().substring(1)) != updateValue) {  //Update money
+                                Log.d("DreamLife", s);
+                                Log.d("DreamLife", moneyText.getText().toString().substring(1));
+                                Log.d("DreamLife", updateValue.toString());
+                                moneyText.setText("$" + updateValue.toString());
+                            }
                         default:
                             continue;
                     }
@@ -166,8 +181,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            // Show 4 total pages.
-            return 4;
+            // Show 5 total pages.
+            return 5;
         }
 
         @Override
@@ -182,6 +197,8 @@ public class MainActivity extends AppCompatActivity {
                     return getString(R.string.title_page3).toUpperCase(l);
                 case 3:
                     return getString(R.string.title_page4).toUpperCase(l);
+                case 4:
+                    return "Info".toUpperCase(l);
             }
             return null;
         }
@@ -198,6 +215,7 @@ public class MainActivity extends AppCompatActivity {
         private static final String ARG_SECTION_NUMBER = "section_number";
         private static View rootView;
         private ArrayAdapter<String> actionList = null;
+        private static PageType type;
 
         /**
          * Returns a new instance of this fragment for the given section
@@ -216,28 +234,41 @@ public class MainActivity extends AppCompatActivity {
         public PlaceholderFragment() {
         }
 
+        private static Comparator<String> ALPHABETICAL_ORDER = new Comparator<String>() {
+            public int compare(String str1, String str2) {
+                int res = String.CASE_INSENSITIVE_ORDER.compare(str1, str2);
+                if (res == 0) {
+                    res = str1.compareTo(str2);
+                }
+                return res;
+            }
+        };
+
+
         public void loadList() {
             Bundle args = getArguments();
-            PageType pageType = PageType.HOME;
             switch(args.getInt(ARG_SECTION_NUMBER)) {
                 case 1:  //Personal page
-                    pageType = PageType.PERSONAL;
+                    this.type = PageType.PERSONAL;
                     break;
                 case 2:
-                    pageType = PageType.WORK;
+                    this.type = PageType.WORK;
                     break;
                 case 3:
-                    pageType = PageType.EDUCATION;
+                    this.type = PageType.EDUCATION;
                     break;
                 case 4:
-                    pageType = PageType.SHOP;
+                    this.type = PageType.SHOP;
+                    break;
+                case 5:
+                    this.type = PageType.INFO;
                     break;
             }
 
             try {
                 ArrayList<String> actionNameList = new ArrayList<>();
-                Log.d("DreamLife", String.format("Get all for %s", pageType.toString()));
-                final HashMap<String, Action> actionMap = GameState.getValidActions(pageType);
+                Log.d("DreamLife", String.format("Get all for %s", this.type.toString()));
+                final HashMap<String, Action> actionMap = GameState.getValidActions(this.type);
                 actionNameList.addAll(actionMap.keySet());
                 Log.d("DreamLife", String.format("Number of valid actions: %d", actionNameList.size()));
 
@@ -246,24 +277,21 @@ public class MainActivity extends AppCompatActivity {
                 actionView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        Action clickedAction = actionMap.get(parent.getItemAtPosition(position).toString());
+                        Action clickedAction = GameState.getAction(parent.getItemAtPosition(position).toString());
 
                         clickedAction.applyAction();
                         while (GameState.hasMoreGameEvents()) {
-                            Log.d("DreamLife", "Toast");
                             GameEvent event = GameState.getNextGameEvent();
                             event.popMessageToast(getContext());
                         }
-                        Log.d("DreamLife", "Loading");
                         loadList();
                     }
                 });
 
                 Log.d("DreamLife", "Reloading list");
                 actionList.clear();
-                Log.d("DreamLife", "1");
                 actionList.addAll(actionNameList);
-                Log.d("DreamLife", "23");
+                actionList.sort(ALPHABETICAL_ORDER);
                 actionList.notifyDataSetChanged();
             }
             catch(Exception e) {
@@ -284,34 +312,39 @@ public class MainActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
 
-            this.rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            int layout = R.layout.action_fragment;
             Bundle args = getArguments();
-            PageType pageType = PageType.HOME;
             switch(args.getInt(ARG_SECTION_NUMBER)) {
                 case 1:  //Personal page
-                    pageType = PageType.PERSONAL;
+                    this.type = PageType.PERSONAL;
                     break;
                 case 2:
-                    pageType = PageType.WORK;
+                    this.type = PageType.WORK;
                     break;
                 case 3:
-                    pageType = PageType.EDUCATION;
+                    this.type = PageType.EDUCATION;
                     break;
                 case 4:
-                    pageType = PageType.SHOP;
+                    this.type = PageType.SHOP;
+                    break;
+                case 5:
+                    this.type = PageType.INFO;
+                    layout = R.layout.info_fragment;
                     break;
             }
 
-            Log.d("DreamLife", pageType.name());
+            this.rootView = inflater.inflate(layout, container, false);
+            Log.d("DreamLife", this.type.name());
 
             try {
                 ArrayList<String> actionNameList = new ArrayList<>();
-                Log.d("DreamLife", String.format("Get all for %s", pageType.toString()));
-                final HashMap<String, Action> actionMap = GameState.getValidActions(pageType);
+                Log.d("DreamLife", String.format("Get all for %s", this.type.toString()));
+                final HashMap<String, Action> actionMap = GameState.getValidActions(this.type);
                 actionNameList.addAll(actionMap.keySet());
                 Log.d("DreamLife", String.format("Number of valid actions: %d", actionNameList.size()));
 
                 actionList = new ArrayAdapter<String>(getContext(), R.layout.action_layout, actionNameList);
+                actionList.sort(ALPHABETICAL_ORDER);
 
                 ListView actionView = (ListView) rootView.findViewById(R.id.action_list);
                 actionView.setAdapter(actionList);
@@ -319,7 +352,7 @@ public class MainActivity extends AppCompatActivity {
                 actionView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        Action clickedAction = actionMap.get(parent.getItemAtPosition(position).toString());
+                        Action clickedAction = GameState.getAction(parent.getItemAtPosition(position).toString());
 
                         clickedAction.applyAction();
                         while(GameState.hasMoreGameEvents()) {
@@ -333,7 +366,7 @@ public class MainActivity extends AppCompatActivity {
                 });
 
                 TextView sectionLabel = (TextView) rootView.findViewById(R.id.section_label);
-                sectionLabel.setText(pageType.name());
+                sectionLabel.setText(this.type.name());
             }
             catch(Exception e) {
                 Log.e("DreamLife", e.toString());

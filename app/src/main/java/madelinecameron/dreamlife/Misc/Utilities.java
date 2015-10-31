@@ -172,33 +172,42 @@ public class Utilities {
                     break;
                 case "WORLD":
                     try {
-                        Log.d("DreamLife", "WorldAttr");
-                        String value = effects.getString(key).replace(" ", "");
-                        Integer modifyValue;
+                        JSONArray worldAttrList = effects.getJSONArray(key);
+                        for (int i = 0; i < worldAttrList.length(); i++) {
+                            JSONObject attrObj = worldAttrList.getJSONObject(i);
 
-                        if(value.contains("RA")) {
-                            Integer lowerBound = Integer.valueOf(value.substring(2, value.indexOf("-")));
-                            Integer upperBound = Integer.valueOf(value.substring(value.indexOf("-") + 1));
-
-                            modifyValue = new Random().nextInt(upperBound - lowerBound) + lowerBound;
-                        }
-                        else {
-                            if (value.matches("^[A-Za-z]*$")) {
-                                String booleanVal = value;
-                                modifyValue = 0;
-                                if (Boolean.valueOf(booleanVal)) {
-                                    modifyValue = 1;
-                                }
-                            } else {
-                                modifyValue = Integer.valueOf(value);
+                            String attrName = "";
+                            Iterator<String> attrKeys = attrObj.keys();
+                            while (attrKeys.hasNext()) {
+                                attrName = attrKeys.next();
                             }
-                        }
 
-                        Log.d("DreamLife", "Modifying " + key + " by " + modifyValue.toString());
-                        GameState.modifyWorldAttribute(key, modifyValue);
+                            String value = attrObj.getString(attrName).replace(" ", "");
+                            Integer modifyValue;
+
+                            if (value.contains("RA")) {
+                                Integer lowerBound = Integer.valueOf(value.substring(2, value.indexOf("-")));
+                                Integer upperBound = Integer.valueOf(value.substring(value.indexOf("-") + 1));
+
+                                modifyValue = new Random().nextInt(upperBound - lowerBound) + lowerBound;
+                            } else {
+                                if (value.matches("^[A-Za-z]*$")) {
+                                    String booleanVal = value;
+                                    modifyValue = 0;
+                                    if (Boolean.valueOf(booleanVal)) {
+                                        modifyValue = 1;
+                                    }
+                                } else {
+                                    modifyValue = Integer.valueOf(value);
+                                }
+                            }
+
+                            Log.d("DreamLife", "Modifying " + attrName + " by " + modifyValue.toString());
+                            GameState.modifyWorldAttribute(attrName, modifyValue);
+                        }
                     }
                     catch(Exception e) {
-                        Log.e("DreamLife", e.toString());
+                        Log.d("DreamLife", e.toString());
                     }
                     break;
                 default:  //Attr / skill modifiers
@@ -214,10 +223,15 @@ public class Utilities {
                         }
                         else {
                             if (value.matches("^[A-Za-z]*$")) {
-                                String booleanVal = value;
+                                String textValue = value;
                                 modifyValue = 0;
-                                if (Boolean.valueOf(booleanVal)) {
-                                    modifyValue = 1;
+                                switch(textValue.toUpperCase()) {
+                                    case "TRUE":
+                                        modifyValue = 1;
+                                        break;
+                                    case "MAX":
+                                        modifyValue = Integer.valueOf(currentChar.getAttrLimit(key).toString());
+                                        break;
                                 }
                             } else {
                                 modifyValue = Integer.valueOf(value);
@@ -303,24 +317,48 @@ public class Utilities {
                 JSONObject neededItem = itemArray.getJSONObject(i);
 
                 if(neededItem == JSONObject.NULL) { return true; }
+                if(neededItem.has("Or")) {
+                    JSONArray orArray = neededItem.getJSONArray("Or");
 
-                String itemID = "";
-                Iterator<String> itemKeys = neededItem.keys();
-                while(itemKeys.hasNext()) {
-                    itemID = itemKeys.next();
-                }
-                Integer qty = neededItem.getInt(itemID);
+                    for(int y = 0; y < orArray.length(); y++) {
+                        try {
+                            JSONObject orItem = orArray.getJSONObject(y);
 
-                if(!currentChar.ownsItem(Integer.valueOf(itemID))) {
-                    if(qty > 0) { return false; }
+                            String itemID = "";
+                            Iterator<String> itemKeys = orItem.keys();
+                            while (itemKeys.hasNext()) {
+                                itemID = itemKeys.next();
+                            }
+
+                            if (currentChar.ownsItem(Integer.valueOf(itemID))) {
+                                return true;
+                            }
+                        }
+                        catch(Exception e) {
+                            Log.d("DreamLife", e.toString());
+                        }
+                    }
                 }
                 else {
-                    int ownedQty = currentChar.getOwnedItemQty(Integer.valueOf(itemID));
-                    if(ownedQty < qty) {
-                       return false;
+                    String itemID = "";
+                    Iterator<String> itemKeys = neededItem.keys();
+                    while (itemKeys.hasNext()) {
+                        itemID = itemKeys.next();
                     }
-                    if(ownedQty > qty && qty == 0) {
-                        return false;
+                    Integer qty = neededItem.getInt(itemID);
+
+                    if (!currentChar.ownsItem(Integer.valueOf(itemID))) {
+                        if (qty > 0) {
+                            return false;
+                        }
+                    } else {
+                        int ownedQty = currentChar.getOwnedItemQty(Integer.valueOf(itemID));
+                        if (ownedQty < qty) {
+                            return false;
+                        }
+                        if (ownedQty > qty && qty == 0) {
+                            return false;
+                        }
                     }
                 }
             }
