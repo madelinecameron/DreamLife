@@ -51,8 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
     private GameState gameState;
     private HashMap<Integer, ArrayAdapter<String>> actionPageMap;
-    private Boolean isRunning;
-    private static Handler uiHandler;
+    private static Thread gameLoop;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         final TextView dateText = (TextView) findViewById(R.id.date_text);
         final TextView jobText = (TextView) findViewById(R.id.job_text);
 
-        uiHandler = new Handler(Looper.getMainLooper()) {
+        Handler uiHandler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message input) {
                 HashMap<String, Object> updateMap = (HashMap<String, Object>)input.obj;
@@ -134,10 +133,40 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        Thread gameLoop = new Thread(new GameLoop(uiHandler, getBaseContext(), this.getWindow().getDecorView().getRootView()));
+        gameLoop = new Thread(new GameLoop(uiHandler, getBaseContext(), this.getWindow().getDecorView().getRootView()));
         gameLoop.start();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        try {
+            gameLoop.join();
+        }
+        catch(Exception e) {
+            Log.d("DreamLife", e.toString());
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        gameLoop.start();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        // Save UI state changes to the savedInstanceState.
+        // This bundle will be passed to onCreate if the process is
+        // killed and restarted.
+        savedInstanceState.putParcelable("GameState", this.gameState);
+        savedInstanceState.putDouble("myDouble", 1.9);
+        savedInstanceState.putInt("MyInt", 1);
+        savedInstanceState.putString("MyString", "Welcome back to Android");
+        // etc.
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
