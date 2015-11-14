@@ -82,7 +82,7 @@ public class Utilities {
                             Double percentIncrease = parseModifier(chanceObj.getJSONArray("Modifier"), basePercent);
                         }
 
-                        if (new Random().nextDouble() < basePercent + 100) {  //If rand smaller than base, it is successful
+                        if (new Random().nextDouble() < basePercent) {  //If rand smaller than base, it is successful
                             Log.d("DreamLife", "Got it!");
                             Set<Integer> addedItems = new LinkedHashSet<>();
                             for(int y = 0; y < get.length(); y++) {

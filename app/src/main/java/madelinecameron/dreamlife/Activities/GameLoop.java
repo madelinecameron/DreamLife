@@ -24,7 +24,7 @@ public class GameLoop implements Runnable {
     private Context currentContext;
     private View currentView;
     private Handler uiHandler;
-    private boolean isRunning = true;
+    private volatile boolean isRunning = true;
 
     public GameLoop(Handler handler, Context context, View view) {
         this.currentContext = context;
@@ -40,6 +40,7 @@ public class GameLoop implements Runnable {
 
     public void run() {
         Log.d("DreamLife", "Trying to run");
+        isRunning = true;
         while(isRunning) {
             try {
                 GameEvent gameEvent = GameState.getNextGameEvent();
@@ -47,10 +48,17 @@ public class GameLoop implements Runnable {
 
                 HashMap<String, Object> updatedValues = currentChar.heartbeat();
                 Message sendMessage = new Message();
+
+                HashMap<String, Object> worldAttr = GameState.worldHeartbeat();
+                for(String s : worldAttr.keySet()) {
+                    Log.d("DreamLife", s);
+                    updatedValues.put(s, worldAttr.get(s));
+                }
+
                 sendMessage.obj = updatedValues;
 
                 uiHandler.sendMessage(sendMessage);
-                Thread.sleep(250);
+                Thread.sleep(250);  //Update every 250ms
             }
             catch(Exception e) {
                 Log.e("DreamLife", e.toString());

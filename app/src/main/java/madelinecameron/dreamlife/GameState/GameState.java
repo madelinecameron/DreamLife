@@ -7,7 +7,10 @@ import android.widget.ArrayAdapter;
 
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -35,8 +38,18 @@ public class GameState {
         this.gameCharacter = new GameCharacter();
         this.context = context;
 
-        worldAttributes.put("Days", 0);
-        worldAttributes.put("Years", 0);
+        try {
+            String dt = "2015-01-01";  // Start date
+            SimpleDateFormat dateForm = new SimpleDateFormat("yyyy-MM-dd");
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(dateForm.parse(dt));
+
+            worldAttributes.put("CurrentDate", calendar);
+            worldAttributes.put("Day", 0);
+        }
+        catch(Exception e) {
+            Log.d("DreamLife", e.toString());
+        }
     }
 
     public static HashMap<String, Object> worldHeartbeat() {
@@ -106,13 +119,26 @@ public class GameState {
     public static Action getAction(String actionName) { return allActions.get(actionName); }
 
     public static boolean isBirthday() {
-        if(worldAttributes.get("Days") == 365) {
-            worldAttributes.put("Years", Integer.parseInt(worldAttributes.get("Years").toString()) + 1);
-            worldAttributes.put("Days", 0);
+        if(worldAttributes.get("Day") == 365) {
+            worldAttributes.put("Day", 0);
+            gameCharacter.modifyAttrOrSkill("Age", (Integer)gameCharacter.getAttrLevel("Age") + 1);
             return true;
         }
         else {
             return false;
+        }
+    }
+
+    public static void nextDay() {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Calendar c = (Calendar)worldAttributes.get("CurrentDate");
+            c.add(Calendar.DATE, 1);  // number of days to add
+            worldAttributes.put("CurrentDate", c);
+            Calendar after = (Calendar)worldAttributes.get("CurrentDate");
+        }
+        catch(Exception e) {
+            Log.d("DreamLife", e.toString());
         }
     }
 
@@ -122,6 +148,10 @@ public class GameState {
         }
         else {
             worldAttributes.put(key, modifier);
+        }
+
+        if(key.equals("Day")) {
+            nextDay();
         }
     }
 

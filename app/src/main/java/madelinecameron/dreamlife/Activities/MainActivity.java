@@ -1,13 +1,18 @@
 package madelinecameron.dreamlife.Activities;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Comparator;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Locale;
+import java.util.Set;
 
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.provider.CalendarContract;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -29,7 +34,10 @@ import android.widget.TextView;
 import madelinecameron.dreamlife.Character.GameCharacter;
 import madelinecameron.dreamlife.GameState.Action;
 import madelinecameron.dreamlife.GameState.GameEvent;
+import madelinecameron.dreamlife.GameState.GameEventType;
 import madelinecameron.dreamlife.GameState.GameState;
+import madelinecameron.dreamlife.GameState.Item;
+import madelinecameron.dreamlife.GameState.ItemAdapter;
 import madelinecameron.dreamlife.R;
 
 public class MainActivity extends AppCompatActivity {
@@ -51,7 +59,8 @@ public class MainActivity extends AppCompatActivity {
 
     private GameState gameState;
     private HashMap<Integer, ArrayAdapter<String>> actionPageMap;
-    private static Thread gameLoop;
+    private static Thread gameLoopThread;
+    private static GameLoop gameLoopObj;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,11 +130,16 @@ public class MainActivity extends AppCompatActivity {
                         case "MONEY":
                             updateValue = Integer.valueOf(updateMap.get(s).toString());
                             if (Integer.valueOf(moneyText.getText().toString().substring(1)) != updateValue) {  //Update money
-                                Log.d("DreamLife", s);
-                                Log.d("DreamLife", moneyText.getText().toString().substring(1));
-                                Log.d("DreamLife", updateValue.toString());
                                 moneyText.setText("$" + updateValue.toString());
                             }
+                            break;
+                        case "CURRENTDATE":
+                            GregorianCalendar calendar = (GregorianCalendar)updateMap.get(s);
+                            String updateStr = "Day " + calendar.get(Calendar.DAY_OF_YEAR) + " of " + calendar.get(Calendar.YEAR);
+                            if(dateText.toString() != updateStr) {
+                                dateText.setText(updateStr);
+                            }
+                            break;
                         default:
                             continue;
                     }
@@ -133,15 +147,19 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        gameLoop = new Thread(new GameLoop(uiHandler, getBaseContext(), this.getWindow().getDecorView().getRootView()));
-        gameLoop.start();
+        Log.d("DreamLife", "Creating");
+        gameLoopObj = new GameLoop(uiHandler, getBaseContext(), this.getWindow().getDecorView().getRootView());
+        gameLoopThread = new Thread(gameLoopObj);
+        gameLoopThread.start();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+
         try {
-            gameLoop.join();
+            gameLoopObj.stop();
+            gameLoopThread.join();
         }
         catch(Exception e) {
             Log.d("DreamLife", e.toString());
@@ -151,8 +169,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        gameLoop.start();
+        Log.d("DreamLife", gameLoopThread.getState().toString());
+        if(gameLoopThread.getState().equals(Thread.State.NEW)) {
+            gameLoopThread.start();
+        }
     }
 
     @Override
@@ -161,10 +181,7 @@ public class MainActivity extends AppCompatActivity {
         // Save UI state changes to the savedInstanceState.
         // This bundle will be passed to onCreate if the process is
         // killed and restarted.
-        savedInstanceState.putParcelable("GameState", this.gameState);
-        savedInstanceState.putDouble("myDouble", 1.9);
-        savedInstanceState.putInt("MyInt", 1);
-        savedInstanceState.putString("MyString", "Welcome back to Android");
+        //savedInstanceState.putParcelable("GameState", this.gameState);
         // etc.
     }
 
@@ -244,6 +261,7 @@ public class MainActivity extends AppCompatActivity {
         private static final String ARG_SECTION_NUMBER = "section_number";
         private static View rootView;
         private ArrayAdapter<String> actionList = null;
+        private ItemAdapter itemList = null;
         private static PageType type;
 
         /**
@@ -273,6 +291,43 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
+        public void characterMoodCheck() {
+            GameCharacter gameCharacter = GameState.getGameCharacter();
+            if((Integer)gameCharacter.getAttrLevel("Fun") < 10) {
+                GameState.addGameEvent(new GameEvent("You're becoming depressed...", GameEventType.CHARACTER));
+                gameCharacter.modifyAttrOrSkill("Depression", (Integer)gameCharacter.getAttrLevel("Depression") + 10);
+            }
+            else {
+                if((Integer)gameCharacter.getAttrLevel("Depression") > 0) {
+                    gameCharacter.modifyAttrOrSkill("Depression", (Integer)gameCharacter.getAttrLevel("Depression") - 10);
+                }
+            }
+            if((Integer)gameCharacter.getAttrLevel("Food") < 25) {
+                GameState.addGameEvent(new GameEvent("Your stomach growls loudly...", GameEventType.CHARACTER));
+                gameCharacter.modifyAttrOrSkill("Weight", (Integer)gameCharacter.getAttrLevel("Weight") - 5);
+            }
+            else {
+                if((Integer)gameCharacter.getAttrLevel("Weight") < 250) {
+                    gameCharacter.modifyAttrOrSkill("Weight", (Integer)gameCharacter.getAttrLevel("Weight") + 5);
+                }
+            }
+
+            if((Integer)gameCharacter.getAttrLevel("Depression") > 100) {
+                GameState.addGameEvent(new GameEvent("You passed away from depression.", GameEventType.CHARACTER));
+                gameCharacter.addItem(15);
+            }
+            if((Integer)gameCharacter.getAttrLevel("Weight") < 0) {
+                GameState.addGameEvent(new GameEvent("You passed out from not eating, hit your head and died", GameEventType.CHARACTER));
+                gameCharacter.addItem(15);
+            }
+
+            if((Integer)gameCharacter.getAttrLevel("Depression") > 50) {
+                GameState.addGameEvent(new GameEvent("Your depression is becoming worse.", GameEventType.CHARACTER));
+            }
+            if((Integer)gameCharacter.getAttrLevel("Weight") < 50) {
+                GameState.addGameEvent(new GameEvent("You are at danger of starving.", GameEventType.CHARACTER));
+            }
+        }
 
         public void loadList() {
             Bundle args = getArguments();
@@ -295,33 +350,36 @@ public class MainActivity extends AppCompatActivity {
             }
 
             try {
-                ArrayList<String> actionNameList = new ArrayList<>();
-                Log.d("DreamLife", String.format("Get all for %s", this.type.toString()));
-                final HashMap<String, Action> actionMap = GameState.getValidActions(this.type);
-                actionNameList.addAll(actionMap.keySet());
-                Log.d("DreamLife", String.format("Number of valid actions: %d", actionNameList.size()));
+                if(this.type != PageType.INFO) {
+                    ArrayList<String> actionNameList = new ArrayList<>();
+                    Log.d("DreamLife", String.format("Get all for %s", this.type.toString()));
+                    final HashMap<String, Action> actionMap = GameState.getValidActions(this.type);
+                    actionNameList.addAll(actionMap.keySet());
+                    Log.d("DreamLife", String.format("Number of valid actions: %d", actionNameList.size()));
 
-                ListView actionView = (ListView) rootView.findViewById(R.id.action_list);
+                    ListView actionView = (ListView) rootView.findViewById(R.id.action_list);
 
-                actionView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        Action clickedAction = GameState.getAction(parent.getItemAtPosition(position).toString());
+                    actionView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            Action clickedAction = GameState.getAction(parent.getItemAtPosition(position).toString());
 
-                        clickedAction.applyAction();
-                        while (GameState.hasMoreGameEvents()) {
-                            GameEvent event = GameState.getNextGameEvent();
-                            event.popMessageToast(getContext());
+                            clickedAction.applyAction();
+                            while (GameState.hasMoreGameEvents()) {
+                                GameEvent event = GameState.getNextGameEvent();
+                                event.popMessageToast(getContext());
+                            }
+                            loadList();
+                            characterMoodCheck();
                         }
-                        loadList();
-                    }
-                });
+                    });
 
-                Log.d("DreamLife", "Reloading list");
-                actionList.clear();
-                actionList.addAll(actionNameList);
-                actionList.sort(ALPHABETICAL_ORDER);
-                actionList.notifyDataSetChanged();
+                    Log.d("DreamLife", "Reloading list");
+                    actionList.clear();
+                    actionList.addAll(actionNameList);
+                    actionList.sort(ALPHABETICAL_ORDER);
+                    actionList.notifyDataSetChanged();
+                }
             }
             catch(Exception e) {
                 Log.e("DreamLife", e.toString());
@@ -366,33 +424,65 @@ public class MainActivity extends AppCompatActivity {
             Log.d("DreamLife", this.type.name());
 
             try {
-                ArrayList<String> actionNameList = new ArrayList<>();
-                Log.d("DreamLife", String.format("Get all for %s", this.type.toString()));
-                final HashMap<String, Action> actionMap = GameState.getValidActions(this.type);
-                actionNameList.addAll(actionMap.keySet());
-                Log.d("DreamLife", String.format("Number of valid actions: %d", actionNameList.size()));
+                if(layout != R.layout.info_fragment) {
+                    ArrayList<String> actionNameList = new ArrayList<>();
+                    Log.d("DreamLife", String.format("Get all for %s", this.type.toString()));
+                    final HashMap<String, Action> actionMap = GameState.getValidActions(this.type);
+                    actionNameList.addAll(actionMap.keySet());
+                    Log.d("DreamLife", String.format("Number of valid actions: %d", actionNameList.size()));
 
-                actionList = new ArrayAdapter<String>(getContext(), R.layout.action_layout, actionNameList);
-                actionList.sort(ALPHABETICAL_ORDER);
+                    actionList = new ArrayAdapter<String>(getContext(), R.layout.action_layout, actionNameList);
+                    actionList.sort(ALPHABETICAL_ORDER);
 
-                ListView actionView = (ListView) rootView.findViewById(R.id.action_list);
-                actionView.setAdapter(actionList);
+                    ListView actionView = (ListView) rootView.findViewById(R.id.action_list);
+                    actionView.setAdapter(actionList);
 
-                actionView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        Action clickedAction = GameState.getAction(parent.getItemAtPosition(position).toString());
+                    actionView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            Action clickedAction = GameState.getAction(parent.getItemAtPosition(position).toString());
 
-                        clickedAction.applyAction();
-                        while(GameState.hasMoreGameEvents()) {
-                            Log.d("DreamLife", "Toast");
-                            GameEvent event = GameState.getNextGameEvent();
-                            event.popMessageToast(getContext());
+                            clickedAction.applyAction();
+                            while(GameState.hasMoreGameEvents()) {
+                                GameEvent event = GameState.getNextGameEvent();
+                                event.popMessageToast(getContext());
+                            }
+                            loadList();
+                            characterMoodCheck();
                         }
-                        Log.d("DreamLife", "Loading");
-                        loadList();
+                    });
+                }
+                else {
+                    Log.d("DreamLife", String.format("Get all for %s", this.type.toString()));
+                    Set<Integer> itemSet = GameState.getGameCharacter().getOwnedItems();
+                    ArrayList<Item> itemArray = new ArrayList<>();
+                    for(Iterator<Integer> i = itemSet.iterator(); i.hasNext(); ) {
+                        Integer id = i.next();
+                        itemArray.add(GameState.getItem(id));
                     }
-                });
+                    Log.d("DreamLife", String.format("Number of valid actions: %d", itemArray.size()));
+
+                    itemList = new ItemAdapter(getContext(), R.layout.item_layout, itemArray);
+
+                    ListView actionView = (ListView) rootView.findViewById(R.id.info_list);
+                    actionView.setAdapter(itemList);
+
+                    actionView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            Action clickedAction = GameState.getAction(parent.getItemAtPosition(position).toString());
+
+                            clickedAction.applyAction();
+                            while(GameState.hasMoreGameEvents()) {
+                                Log.d("DreamLife", "Toast");
+                                GameEvent event = GameState.getNextGameEvent();
+                                event.popMessageToast(getContext());
+                            }
+                            Log.d("DreamLife", "Loading");
+                            loadList();
+                        }
+                    });
+                }
 
                 TextView sectionLabel = (TextView) rootView.findViewById(R.id.section_label);
                 sectionLabel.setText(this.type.name());

@@ -37,6 +37,9 @@ public class GameCharacter {
         attributes.put("IsStudying", 0);
         attributes.put("Education", Education.HIGH_SCHOOL);
         attributes.put("Home", Home.HOMELESS);
+        attributes.put("Depression", 0);
+        attributes.put("Weight", 150);
+        attributes.put("Tired", 100);
     }
 
     public HashMap<String, Object> heartbeat() {
