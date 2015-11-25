@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
         final TextView dateText = (TextView) findViewById(R.id.date_text);
         final TextView jobText = (TextView) findViewById(R.id.job_text);
 
+
         Handler uiHandler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message input) {
@@ -140,6 +141,11 @@ public class MainActivity extends AppCompatActivity {
                                 dateText.setText(updateStr);
                             }
                             break;
+                        case "JOB":
+                            String job = (String)updateMap.get(s);
+                            if(jobText.toString() != job) {
+                                jobText.setText(job);
+                            }
                         default:
                             continue;
                     }
@@ -295,11 +301,14 @@ public class MainActivity extends AppCompatActivity {
             GameCharacter gameCharacter = GameState.getGameCharacter();
             if((Integer)gameCharacter.getAttrLevel("Fun") < 10) {
                 GameState.addGameEvent(new GameEvent("You're becoming depressed...", GameEventType.CHARACTER));
-                gameCharacter.modifyAttrOrSkill("Depression", (Integer)gameCharacter.getAttrLevel("Depression") + 10);
+                gameCharacter.modifyAttrOrSkill("Depression", (Integer)gameCharacter.getAttrLevel("Depression") + 15);
             }
             else {
                 if((Integer)gameCharacter.getAttrLevel("Depression") > 0) {
-                    gameCharacter.modifyAttrOrSkill("Depression", (Integer)gameCharacter.getAttrLevel("Depression") - 10);
+                    gameCharacter.modifyAttrOrSkill("Depression", (Integer)gameCharacter.getAttrLevel("Depression") - 25);
+                }
+                else {
+                    gameCharacter.modifyAttrOrSkill("Depression", 0);
                 }
             }
             if((Integer)gameCharacter.getAttrLevel("Food") < 25) {
@@ -309,6 +318,9 @@ public class MainActivity extends AppCompatActivity {
             else {
                 if((Integer)gameCharacter.getAttrLevel("Weight") < 250) {
                     gameCharacter.modifyAttrOrSkill("Weight", (Integer)gameCharacter.getAttrLevel("Weight") + 5);
+                }
+                else {
+                    gameCharacter.modifyAttrOrSkill("Weight", 0);
                 }
             }
 

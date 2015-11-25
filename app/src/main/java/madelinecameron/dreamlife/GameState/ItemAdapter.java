@@ -40,7 +40,7 @@ public class ItemAdapter extends ArrayAdapter<Item> {
         if (item!= null) {
             // My layout has only one TextView
             // do whatever you want with your string and long
-            viewHolder.itemView.setText(String.format("% - %d", item.name, item.getSellCost()));
+            viewHolder.itemView.setText(String.format("%s - %d", item.name, item.getSellCost()));
         }
 
         return convertView;

@@ -66,6 +66,7 @@ public class GameState {
                     Integer id = selectCursor.getInt(selectCursor.getColumnIndex("_id"));
                     String name = selectCursor.getString(selectCursor.getColumnIndex("Name"));
                     Integer cost = selectCursor.getInt(selectCursor.getColumnIndex("Cost"));
+                    String type = selectCursor.getString(selectCursor.getColumnIndex("Type"));
                     Boolean display = Boolean.valueOf(selectCursor.getString(selectCursor.getColumnIndex("Display")));
                     Boolean purchasable = Boolean.valueOf(selectCursor.getString(selectCursor.getColumnIndex("Purchasable")));
                     Boolean saleable = Boolean.valueOf(selectCursor.getString(selectCursor.getColumnIndex("Saleable")));
@@ -73,7 +74,7 @@ public class GameState {
                     JSONObject results = new JSONObject(selectCursor.getString(selectCursor.getColumnIndex("Result")));
                     String message = selectCursor.getString(selectCursor.getColumnIndex("Message"));
 
-                    allItems.put(id, new Item(id, name, cost, display, purchasable, saleable, needed, results, message));
+                    allItems.put(id, new Item(id, name, cost, type, display, purchasable, saleable, needed, results, message));
                 } catch (Exception e) {
                     Log.e("DreamLife", e.toString());
                 }

@@ -3,6 +3,7 @@ package madelinecameron.dreamlife.Character;
 import android.util.Log;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Set;
 
 import madelinecameron.dreamlife.GameState.GameEvent;
@@ -17,7 +18,7 @@ import madelinecameron.dreamlife.Misc.Utilities;
 public class GameCharacter {
     private HashMap<String, Object> attributes = new HashMap<>();
     private HashMap<String, Object> attributeLimits = new HashMap<>();
-    private static HashMap<Integer, Integer> ownedItems = new HashMap<>();
+    private HashMap<Integer, Integer> ownedItems = new HashMap<>();
     private HashMap<String, Integer> skillMap = new HashMap<>();
     private HashMap<String, Float> progressMap = new HashMap<>();
 
@@ -51,6 +52,18 @@ public class GameCharacter {
 
     public String getEducation() { return attributes.get("Education").toString(); }
     public String getHomeType() { return attributes.get("Home").toString(); }
+    public String getJob() {
+        Iterator<Integer> itemIterator = ownedItems.keySet().iterator();
+        String currentJobName = "Unemployed";
+        while(itemIterator.hasNext()) {
+            Item currentItem = GameState.getItem(itemIterator.next());
+            if(currentItem.type == "Job") {
+                currentJobName = currentItem.name;
+            }
+        }
+
+        return currentJobName;
+    }
     public Set<Integer> getOwnedItems() { return ownedItems.keySet(); }
     public Set<String> getSkills() { return skillMap.keySet(); }
     public boolean hasSkill(String skillName) { return skillMap.keySet().contains(skillName); }

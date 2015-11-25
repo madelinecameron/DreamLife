@@ -55,6 +55,8 @@ public class GameLoop implements Runnable {
                     updatedValues.put(s, worldAttr.get(s));
                 }
 
+                updatedValues.put("Job", currentChar.getJob());
+
                 sendMessage.obj = updatedValues;
 
                 uiHandler.sendMessage(sendMessage);
